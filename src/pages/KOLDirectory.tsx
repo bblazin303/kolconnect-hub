@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -287,13 +288,15 @@ export default function KOLDirectory() {
             </div>
           </div>
           
-          <Button 
-            className="w-full btn-secondary text-xs py-2 group mt-2"
-            size="sm"
-          >
-            View Profile
-            <Eye className="ml-1 h-3 w-3 group-hover:scale-110 transition-transform" />
-          </Button>
+          <Link to={`/kols/${kol.id}`}>
+            <Button 
+              className="w-full btn-secondary text-xs py-2 group mt-2"
+              size="sm"
+            >
+              View Profile
+              <Eye className="ml-1 h-3 w-3 group-hover:scale-110 transition-transform" />
+            </Button>
+          </Link>
         </div>
       </CardContent>
     </Card>

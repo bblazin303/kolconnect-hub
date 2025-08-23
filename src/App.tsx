@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import KOLDirectory from "./pages/KOLDirectory";
+import KOLProfile from "./pages/KOLProfile";
 import JobBoard from "./pages/JobBoard";
 import Leaderboard from "./pages/Leaderboard";
 import AuthPage from "./pages/AuthPage";
@@ -21,6 +22,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/kols" element={<KOLDirectory />} />
+          <Route path="/kols/:kolId" element={<KOLProfile />} />
           <Route path="/jobs" element={<JobBoard />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/auth" element={<AuthPage />} />
