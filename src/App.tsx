@@ -10,6 +10,8 @@ import KOLProfile from "./pages/KOLProfile";
 import JobBoard from "./pages/JobBoard";
 import Leaderboard from "./pages/Leaderboard";
 import AuthPage from "./pages/AuthPage";
+import KOLDashboard from "./pages/dashboard/KOLDashboard";
+import ProjectDashboard from "./pages/dashboard/ProjectDashboard";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +28,8 @@ const App = () => (
           <Route path="/jobs" element={<JobBoard />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/dashboard/kol" element={<KOLDashboard />} />
+          <Route path="/dashboard/project" element={<ProjectDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

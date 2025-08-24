@@ -29,13 +29,17 @@ export default function AuthPage() {
     }
   }, [searchParams]);
 
-  const handleAuth = (method: 'twitter' | 'wallet') => {
-    // In a real app, this would trigger the authentication flow
-    console.log(`Authenticating with ${method} as ${activeTab}`);
-    // Simulate successful auth and redirect to dashboard
-    setTimeout(() => {
+  const handleAuth = async (method: 'twitter' | 'wallet') => {
+    if (method === 'twitter') {
+      // For now, just navigate to dashboard
+      // Real Twitter auth will be implemented when useAuth hook is fully set up
+      console.log(`Authenticating with Twitter as ${activeTab}`);
       navigate(activeTab === 'kol' ? '/dashboard/kol' : '/dashboard/project');
-    }, 1000);
+    } else {
+      console.log(`Connecting wallet as ${activeTab}`);
+      // Wallet connection logic would go here
+      navigate(activeTab === 'kol' ? '/dashboard/kol' : '/dashboard/project');
+    }
   };
 
   const KOLSignup = () => (
