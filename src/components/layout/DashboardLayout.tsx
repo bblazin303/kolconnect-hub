@@ -1,12 +1,11 @@
-import { useAuth } from '@/hooks/useAuth'
-import { DashboardSidebar } from './DashboardSidebar'
+import { ReactNode } from 'react'
 import { DashboardHeader } from './DashboardHeader'
-import { SidebarProvider } from '@/components/ui/sidebar'
+import { DashboardSidebar } from './DashboardSidebar'
+import { useAuth } from '@/hooks/useAuth'
 import { Navigate } from 'react-router-dom'
-import { Skeleton } from '@/components/ui/skeleton'
 
 interface DashboardLayoutProps {
-  children: React.ReactNode
+  children: ReactNode
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
@@ -14,29 +13,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="h-16 border-b border-border/50 flex items-center px-6">
-          <Skeleton className="h-8 w-32" />
-        </div>
-        <div className="flex">
-          <div className="w-64 border-r border-border/50 p-4">
-            <div className="space-y-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          </div>
-          <div className="flex-1 p-6">
-            <div className="space-y-6">
-              <Skeleton className="h-8 w-64" />
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-32 w-full" />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     )
   }
@@ -46,16 +24,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen w-full bg-background">
+    <div className="min-h-screen bg-background">
+      <DashboardSidebar />
+      <div className="lg:pl-64">
         <DashboardHeader />
-        <div className="flex min-h-[calc(100vh-4rem)] w-full">
-          <DashboardSidebar />
-          <main className="flex-1 p-6 overflow-auto">
-            {children}
-          </main>
-        </div>
+        <main className="p-6">
+          {children}
+        </main>
       </div>
-    </SidebarProvider>
+    </div>
   )
 }

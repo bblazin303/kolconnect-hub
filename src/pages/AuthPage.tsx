@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from "sonner";
 import { 
   Twitter, 
   Shield, 
@@ -21,6 +23,7 @@ export default function AuthPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(searchParams.get('type') || 'kol');
+  const { isAuthenticated, user, signInWithTwitter } = useAuth();
 
   useEffect(() => {
     const type = searchParams.get('type');
@@ -29,16 +32,27 @@ export default function AuthPage() {
     }
   }, [searchParams]);
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user?.profile) {
+      const dashboardPath = user.profile.user_type === 'kol' ? '/dashboard/kol' : '/dashboard/project';
+      navigate(dashboardPath);
+    }
+  }, [isAuthenticated, user, navigate]);
+
   const handleAuth = async (method: 'twitter' | 'wallet') => {
     if (method === 'twitter') {
-      // For now, just navigate to dashboard
-      // Real Twitter auth will be implemented when useAuth hook is fully set up
-      console.log(`Authenticating with Twitter as ${activeTab}`);
-      navigate(activeTab === 'kol' ? '/dashboard/kol' : '/dashboard/project');
+      try {
+        const { error } = await signInWithTwitter(activeTab as 'kol' | 'project');
+        if (error) {
+          toast.error('Failed to sign in with Twitter. Please try again.');
+        }
+      } catch (error) {
+        console.error('Sign in error:', error);
+        toast.error('An unexpected error occurred. Please try again.');
+      }
     } else {
-      console.log(`Connecting wallet as ${activeTab}`);
-      // Wallet connection logic would go here
-      navigate(activeTab === 'kol' ? '/dashboard/kol' : '/dashboard/project');
+      toast.info('Wallet authentication coming soon!');
     }
   };
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { User, Session } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
-import { Database } from '@/lib/supabase'
+import { supabase } from '@/integrations/supabase/client'
+import type { Database } from '@/integrations/supabase/types'
 
 type UserProfile = Database['public']['Tables']['users']['Row']
 type KOLProfile = Database['public']['Tables']['kol_profiles']['Row']
