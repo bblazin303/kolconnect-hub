@@ -90,53 +90,15 @@ export function useAuth() {
     try {
       const redirectUrl = `${window.location.origin}/auth/callback`;
       
-      // Test if Supabase auth is working at all
-      console.log('🔍 Testing basic Supabase auth connection...');
-      const { data: session } = await supabase.auth.getSession();
-      console.log('📊 Current session state:', session);
-      
-      // Test if we can reach Supabase auth endpoint
-      console.log('🌐 Testing Supabase auth endpoint...');
-      try {
-        const testResponse = await fetch(`https://nontyyrqwonrlcmvxdjy.supabase.co/auth/v1/settings`, {
-          method: 'GET',
-          headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vbnR5eXJxd29ucmxjbXZ4ZGp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTY5NTUsImV4cCI6MjA3MTU3Mjk1NX0.Yem0z53jj78hTz7i5NzeBWwK8Ft7zDG4tRgVAWhU6Tk'
-          }
-        });
-        console.log('✅ Auth endpoint status:', testResponse.status);
-        const settingsData = await testResponse.json();
-        console.log('🔧 Available auth providers:', settingsData);
-      } catch (endpointError) {
-        console.error('❌ Failed to reach auth endpoint:', endpointError);
-      }
-      
-      console.log('🎯 Attempting Twitter OAuth...');
+      console.log('🚀 Starting Twitter OAuth...');
+      console.log('📍 Redirect URL:', redirectUrl);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
         options: {
-          redirectTo: redirectUrl,
-          queryParams: {
-            user_type: userType
-          }
+          redirectTo: redirectUrl
         }
       })
-      
-      if (data?.url) {
-        console.log('🚀 Final OAuth URL that will be accessed:', data.url);
-        
-        // Test if we can reach this URL
-        console.log('🧪 Testing OAuth URL accessibility...');
-        setTimeout(async () => {
-          try {
-            const testResponse = await fetch(data.url, { method: 'HEAD', mode: 'no-cors' });
-            console.log('✅ OAuth URL test response:', testResponse.status);
-          } catch (fetchError) {
-            console.error('❌ Cannot reach OAuth URL:', fetchError);
-          }
-        }, 100);
-      }
       
       if (error) {
         console.error('❌ OAuth error full details:', {
