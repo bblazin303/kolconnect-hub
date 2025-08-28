@@ -118,7 +118,7 @@ export function useAuth() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
         options: {
-          redirectTo: `${window.location.origin}/dashboard/${userType}`
+          redirectTo: `${window.location.origin}/auth/callback?type=${userType}`
         }
       })
       

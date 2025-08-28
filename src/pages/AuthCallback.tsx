@@ -10,9 +10,6 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
-      // Wait for auth to finish loading
-      if (loading) return
-
       // Check for error in URL params
       const error = searchParams.get('error')
       const errorDescription = searchParams.get('error_description')
@@ -28,19 +25,24 @@ export default function AuthCallback() {
         return
       }
 
+      // Wait for auth to finish loading
+      if (loading) return
+
       // If user is authenticated, redirect to appropriate dashboard
       if (user?.profile) {
-        const userType = user.profile.user_type
+        const userType = user.profile.user_type || searchParams.get('type') || 'kol'
         navigate(`/dashboard/${userType}`, { replace: true })
-      } else if (!loading) {
-        // If no user after loading completes, redirect to auth
-        navigate('/auth')
+      } else {
+        // If no user after a short delay, redirect to auth
+        setTimeout(() => {
+          if (!user) {
+            navigate('/auth')
+          }
+        }, 2000)
       }
     }
 
-    // Add a small delay to ensure session processing completes
-    const timer = setTimeout(handleCallback, 1000)
-    return () => clearTimeout(timer)
+    handleCallback()
   }, [user, loading, navigate, searchParams])
 
   return (
