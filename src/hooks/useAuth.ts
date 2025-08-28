@@ -124,12 +124,18 @@ export function useAuth() {
       })
       
       if (data?.url) {
-        console.log('🚀 Final OAuth URL:', data.url);
-        console.log('🔍 URL breakdown:', {
-          provider: data.url.includes('provider=twitter'),
-          redirectTo: data.url.includes('redirect_to='),
-          userType: data.url.includes('user_type=kol')
-        });
+        console.log('🚀 Final OAuth URL that will be accessed:', data.url);
+        
+        // Test if we can reach this URL
+        console.log('🧪 Testing OAuth URL accessibility...');
+        setTimeout(async () => {
+          try {
+            const testResponse = await fetch(data.url, { method: 'HEAD', mode: 'no-cors' });
+            console.log('✅ OAuth URL test response:', testResponse.status);
+          } catch (fetchError) {
+            console.error('❌ Cannot reach OAuth URL:', fetchError);
+          }
+        }, 100);
       }
       
       if (error) {
