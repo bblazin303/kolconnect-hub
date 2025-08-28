@@ -88,33 +88,6 @@ export function useAuth() {
 
   const signInWithTwitter = async (userType: 'kol' | 'project') => {
     try {
-      // Test basic Supabase connection first
-      console.log('🧪 Testing Supabase connection...');
-      const { data: session } = await supabase.auth.getSession();
-      console.log('📊 Session test result:', session);
-      
-      // Test if we can reach auth settings
-      const testUrl = `https://nontyyrqwonrlcmvxdjy.supabase.co/auth/v1/settings`;
-      console.log('🌐 Testing auth endpoint:', testUrl);
-      
-      try {
-        const response = await fetch(testUrl, {
-          headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vbnR5eXJxd29ucmxjbXZ4ZGp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTY5NTUsImV4cCI6MjA3MTU3Mjk1NX0.Yem0z53jj78hTz7i5NzeBWwK8Ft7zDG4tRgVAWhU6Tk'
-          }
-        });
-        const settings = await response.json();
-        console.log('✅ Auth settings:', settings);
-        console.log('🐦 Twitter enabled:', settings.external?.twitter);
-      } catch (e) {
-        console.error('❌ Auth endpoint error:', e);
-      }
-
-      const redirectUrl = `${window.location.origin}/auth/callback`;
-      
-      console.log('🚀 Starting Twitter OAuth...');
-      console.log('📍 Redirect URL:', redirectUrl);
-      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
         options: {
@@ -122,22 +95,14 @@ export function useAuth() {
         }
       })
       
-      console.log('🔗 Generated OAuth URL:', data?.url);
-      
       if (error) {
-        console.error('❌ OAuth error:', error);
-        throw error;
-      }
-      
-      // Manual redirect to test
-      if (data?.url) {
-        console.log('🌐 Manually redirecting to:', data.url);
-        window.location.href = data.url;
+        console.error('OAuth error:', error)
+        throw error
       }
       
       return { data, error: null }
     } catch (error) {
-      console.error('❌ Error signing in with Twitter:', error)
+      console.error('Error signing in with Twitter:', error)
       return { data: null, error }
     }
   }
