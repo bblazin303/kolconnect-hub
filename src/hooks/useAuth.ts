@@ -88,7 +88,7 @@ export function useAuth() {
 
   const signInWithTwitter = async (userType: 'kol' | 'project') => {
     try {
-      const redirectUrl = `${window.location.origin}/dashboard/${userType}`;
+      const redirectUrl = `${window.location.origin}/auth/callback`;
       
       // Test if Supabase auth is working at all
       console.log('🔍 Testing basic Supabase auth connection...');
