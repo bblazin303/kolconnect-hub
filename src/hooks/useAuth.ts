@@ -116,7 +116,10 @@ export function useAuth() {
       console.log('📍 Redirect URL:', redirectUrl);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'twitter'
+        provider: 'twitter',
+        options: {
+          redirectTo: redirectUrl
+        }
       })
       
       console.log('🔗 Generated OAuth URL:', data?.url);
