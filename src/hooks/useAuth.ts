@@ -89,9 +89,26 @@ export function useAuth() {
   const signInWithTwitter = async (userType: 'kol' | 'project') => {
     try {
       const redirectUrl = `${window.location.origin}/dashboard/${userType}`;
-      console.log('🔄 Starting Twitter OAuth with redirect:', redirectUrl);
-      console.log('🌐 Current origin:', window.location.origin);
+      
+      // Detailed debugging
+      console.log('🔄 DETAILED DEBUG INFO:');
+      console.log('📍 Window location object:', {
+        href: window.location.href,
+        origin: window.location.origin,
+        hostname: window.location.hostname,
+        protocol: window.location.protocol,
+        port: window.location.port
+      });
+      console.log('🎯 Constructed redirect URL:', redirectUrl);
       console.log('👤 User type:', userType);
+      
+      // Test if redirect URL is valid
+      try {
+        new URL(redirectUrl);
+        console.log('✅ Redirect URL is valid');
+      } catch (urlError) {
+        console.error('❌ Invalid redirect URL:', urlError);
+      }
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
@@ -104,7 +121,11 @@ export function useAuth() {
       })
       
       if (error) {
-        console.error('❌ OAuth error:', error);
+        console.error('❌ OAuth error full details:', {
+          message: error.message,
+          status: error.status,
+          error: error
+        });
         throw error;
       }
       
