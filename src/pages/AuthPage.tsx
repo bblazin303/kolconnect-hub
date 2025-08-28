@@ -41,16 +41,26 @@ export default function AuthPage() {
   }, [isAuthenticated, user, navigate]);
 
   const handleAuth = async (method: 'twitter' | 'wallet') => {
+    console.log('🔥 handleAuth called with method:', method, 'activeTab:', activeTab);
+    
     if (method === 'twitter') {
       try {
-        console.log('🚀 Starting authentication for:', activeTab);
+        console.log('🚀 Starting Twitter authentication for:', activeTab);
+        console.log('🌍 Current window location:', window.location.href);
+        console.log('🌐 Current origin:', window.location.origin);
+        
         const { error } = await signInWithTwitter(activeTab as 'kol' | 'project');
+        
         if (error) {
-          console.error('❌ Authentication error:', error);
-          toast.error(`Failed to sign in with Twitter: ${error.message || 'Please try again.'}`);
+          console.error('❌ Authentication error full object:', error);
+          console.error('❌ Error message:', error.message);
+          console.error('❌ Error status:', error.status);
+          toast.error(`Failed to sign in with Twitter: ${error.message || 'Please check Supabase configuration.'}`);
+        } else {
+          console.log('✅ Twitter sign in initiated successfully!');
         }
       } catch (error) {
-        console.error('❌ Sign in error:', error);
+        console.error('❌ Unexpected sign in error:', error);
         toast.error('An unexpected error occurred. Please try again.');
       }
     } else {
