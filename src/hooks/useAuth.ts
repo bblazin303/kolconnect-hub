@@ -94,10 +94,7 @@ export function useAuth() {
       console.log('📍 Redirect URL:', redirectUrl);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'twitter',
-        options: {
-          redirectTo: redirectUrl
-        }
+        provider: 'twitter'
       })
       
       console.log('🔗 Generated OAuth URL:', data?.url);
@@ -113,18 +110,6 @@ export function useAuth() {
         window.location.href = data.url;
       }
       
-      return { data, error: null }
-      
-      if (error) {
-        console.error('❌ OAuth error full details:', {
-          message: error.message,
-          status: error.status,
-          error: error
-        });
-        throw error;
-      }
-      
-      console.log('✅ OAuth initiated successfully:', data);
       return { data, error: null }
     } catch (error) {
       console.error('❌ Error signing in with Twitter:', error)
