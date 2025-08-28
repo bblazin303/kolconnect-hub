@@ -100,6 +100,21 @@ export function useAuth() {
         }
       })
       
+      console.log('🔗 Generated OAuth URL:', data?.url);
+      
+      if (error) {
+        console.error('❌ OAuth error:', error);
+        throw error;
+      }
+      
+      // Manual redirect to test
+      if (data?.url) {
+        console.log('🌐 Manually redirecting to:', data.url);
+        window.location.href = data.url;
+      }
+      
+      return { data, error: null }
+      
       if (error) {
         console.error('❌ OAuth error full details:', {
           message: error.message,
