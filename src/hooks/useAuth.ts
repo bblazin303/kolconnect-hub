@@ -88,19 +88,30 @@ export function useAuth() {
 
   const signInWithTwitter = async (userType: 'kol' | 'project') => {
     try {
+      const redirectUrl = `${window.location.origin}/dashboard/${userType}`;
+      console.log('🔄 Starting Twitter OAuth with redirect:', redirectUrl);
+      console.log('🌐 Current origin:', window.location.origin);
+      console.log('👤 User type:', userType);
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
         options: {
-          redirectTo: `${window.location.origin}/dashboard/${userType}`,
+          redirectTo: redirectUrl,
           queryParams: {
             user_type: userType
           }
         }
       })
-      if (error) throw error
+      
+      if (error) {
+        console.error('❌ OAuth error:', error);
+        throw error;
+      }
+      
+      console.log('✅ OAuth initiated successfully:', data);
       return { data, error: null }
     } catch (error) {
-      console.error('Error signing in with Twitter:', error)
+      console.error('❌ Error signing in with Twitter:', error)
       return { data: null, error }
     }
   }

@@ -43,12 +43,14 @@ export default function AuthPage() {
   const handleAuth = async (method: 'twitter' | 'wallet') => {
     if (method === 'twitter') {
       try {
+        console.log('🚀 Starting authentication for:', activeTab);
         const { error } = await signInWithTwitter(activeTab as 'kol' | 'project');
         if (error) {
-          toast.error('Failed to sign in with Twitter. Please try again.');
+          console.error('❌ Authentication error:', error);
+          toast.error(`Failed to sign in with Twitter: ${error.message || 'Please try again.'}`);
         }
       } catch (error) {
-        console.error('Sign in error:', error);
+        console.error('❌ Sign in error:', error);
         toast.error('An unexpected error occurred. Please try again.');
       }
     } else {
