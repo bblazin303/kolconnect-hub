@@ -151,38 +151,6 @@ export function useAuth() {
     }
   }
 
-  const signInWithEmail = async (email: string, password: string) => {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
-      if (error) throw error
-      return { data, error: null }
-    } catch (error) {
-      console.error('Error signing in with email:', error)
-      return { data: null, error }
-    }
-  }
-
-  const signUpWithEmail = async (email: string, password: string, userType: 'kol' | 'project') => {
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            user_type: userType
-          }
-        }
-      })
-      if (error) throw error
-      return { data, error: null }
-    } catch (error) {
-      console.error('Error signing up with email:', error)
-      return { data: null, error }
-    }
-  }
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user?.id) return
@@ -210,8 +178,6 @@ export function useAuth() {
     session,
     loading,
     signInWithTwitter,
-    signInWithEmail,
-    signUpWithEmail,
     signOut,
     updateProfile,
     isAuthenticated: !!session,

@@ -9,7 +9,6 @@ import KOLDirectory from "./pages/KOLDirectory";
 import KOLProfile from "./pages/KOLProfile";
 import JobBoard from "./pages/JobBoard";
 import Leaderboard from "./pages/Leaderboard";
-import EmailAuthPage from "./pages/EmailAuthPage";
 import AuthPage from "./pages/AuthPage";
 import AuthCallback from "./pages/AuthCallback";
 import KOLDashboard from "./pages/dashboard/KOLDashboard";
@@ -29,7 +28,6 @@ const App = () => (
           <Route path="/kols/:kolId" element={<KOLProfile />} />
           <Route path="/jobs" element={<JobBoard />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/email-auth" element={<EmailAuthPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/dashboard/kol" element={<KOLDashboard />} />
