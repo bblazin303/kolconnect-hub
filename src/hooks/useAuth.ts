@@ -112,6 +112,7 @@ export function useAuth() {
       }
       
       console.log('🎯 Attempting Twitter OAuth...');
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
         options: {
@@ -121,6 +122,15 @@ export function useAuth() {
           }
         }
       })
+      
+      if (data?.url) {
+        console.log('🚀 Final OAuth URL:', data.url);
+        console.log('🔍 URL breakdown:', {
+          provider: data.url.includes('provider=twitter'),
+          redirectTo: data.url.includes('redirect_to='),
+          userType: data.url.includes('user_type=kol')
+        });
+      }
       
       if (error) {
         console.error('❌ OAuth error full details:', {
