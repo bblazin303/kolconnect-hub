@@ -90,26 +90,28 @@ export function useAuth() {
     try {
       const redirectUrl = `${window.location.origin}/dashboard/${userType}`;
       
-      // Detailed debugging
-      console.log('🔄 DETAILED DEBUG INFO:');
-      console.log('📍 Window location object:', {
-        href: window.location.href,
-        origin: window.location.origin,
-        hostname: window.location.hostname,
-        protocol: window.location.protocol,
-        port: window.location.port
-      });
-      console.log('🎯 Constructed redirect URL:', redirectUrl);
-      console.log('👤 User type:', userType);
+      // Test if Supabase auth is working at all
+      console.log('🔍 Testing basic Supabase auth connection...');
+      const { data: session } = await supabase.auth.getSession();
+      console.log('📊 Current session state:', session);
       
-      // Test if redirect URL is valid
+      // Test if we can reach Supabase auth endpoint
+      console.log('🌐 Testing Supabase auth endpoint...');
       try {
-        new URL(redirectUrl);
-        console.log('✅ Redirect URL is valid');
-      } catch (urlError) {
-        console.error('❌ Invalid redirect URL:', urlError);
+        const testResponse = await fetch(`https://nontyyrqwonrlcmvxdjy.supabase.co/auth/v1/settings`, {
+          method: 'GET',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vbnR5eXJxd29ucmxjbXZ4ZGp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTY5NTUsImV4cCI6MjA3MTU3Mjk1NX0.Yem0z53jj78hTz7i5NzeBWwK8Ft7zDG4tRgVAWhU6Tk'
+          }
+        });
+        console.log('✅ Auth endpoint status:', testResponse.status);
+        const settingsData = await testResponse.json();
+        console.log('🔧 Available auth providers:', settingsData);
+      } catch (endpointError) {
+        console.error('❌ Failed to reach auth endpoint:', endpointError);
       }
       
+      console.log('🎯 Attempting Twitter OAuth...');
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
         options: {
