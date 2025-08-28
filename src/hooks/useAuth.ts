@@ -88,6 +88,28 @@ export function useAuth() {
 
   const signInWithTwitter = async (userType: 'kol' | 'project') => {
     try {
+      // Test basic Supabase connection first
+      console.log('🧪 Testing Supabase connection...');
+      const { data: session } = await supabase.auth.getSession();
+      console.log('📊 Session test result:', session);
+      
+      // Test if we can reach auth settings
+      const testUrl = `https://nontyyrqwonrlcmvxdjy.supabase.co/auth/v1/settings`;
+      console.log('🌐 Testing auth endpoint:', testUrl);
+      
+      try {
+        const response = await fetch(testUrl, {
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vbnR5eXJxd29ucmxjbXZ4ZGp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTY5NTUsImV4cCI6MjA3MTU3Mjk1NX0.Yem0z53jj78hTz7i5NzeBWwK8Ft7zDG4tRgVAWhU6Tk'
+          }
+        });
+        const settings = await response.json();
+        console.log('✅ Auth settings:', settings);
+        console.log('🐦 Twitter enabled:', settings.external?.twitter);
+      } catch (e) {
+        console.error('❌ Auth endpoint error:', e);
+      }
+
       const redirectUrl = `${window.location.origin}/auth/callback`;
       
       console.log('🚀 Starting Twitter OAuth...');
