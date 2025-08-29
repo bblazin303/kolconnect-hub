@@ -39,7 +39,7 @@ export default function AuthCallback() {
       // If user is authenticated, redirect to appropriate dashboard
       if (user?.profile) {
         console.log('✅ User authenticated with profile:', user.profile)
-        const userType = user.profile.user_type || searchParams.get('type') || 'kol'
+        const userType = user.profile.user_type || 'kol'
         console.log('🎯 Redirecting to dashboard:', userType)
         navigate(`/dashboard/${userType}`, { replace: true })
       } else if (user && !user.profile) {

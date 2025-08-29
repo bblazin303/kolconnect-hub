@@ -102,14 +102,18 @@ export function useAuth() {
 
   const signInWithTwitter = async (userType: 'kol' | 'project') => {
     try {
-      const redirectUrl = `${window.location.origin}/auth/callback?type=${userType}`
+      const redirectUrl = `${window.location.origin}/auth/callback`
       console.log('🐦 Starting Twitter OAuth with redirect:', redirectUrl)
       console.log('🐦 User type:', userType)
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
         options: {
-          redirectTo: redirectUrl
+          redirectTo: redirectUrl,
+          // Pass user type in metadata so the trigger knows what profile to create
+          queryParams: {
+            user_type: userType
+          }
         }
       })
       
