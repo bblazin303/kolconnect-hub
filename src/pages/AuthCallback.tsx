@@ -15,12 +15,17 @@ export default function AuthCallback() {
       console.log('🔍 User state:', user)
       console.log('🔍 Loading state:', loading)
       
+      // Get stored user type from localStorage
+      const storedUserType = localStorage.getItem('oauth_user_type') as 'kol' | 'project' | null
+      console.log('🔍 Stored user type:', storedUserType)
+      
       // Check for error in URL params
       const error = searchParams.get('error')
       const errorDescription = searchParams.get('error_description')
       
       if (error) {
         console.error('❌ OAuth Error:', error, errorDescription)
+        localStorage.removeItem('oauth_user_type') // Clean up
         toast({
           variant: "destructive",
           title: "Authentication Failed", 
@@ -36,18 +41,28 @@ export default function AuthCallback() {
         return
       }
 
-      // If user is authenticated, redirect to appropriate dashboard
+      // If user is authenticated, handle profile setup and redirect
       if (user?.profile) {
         console.log('✅ User authenticated with profile:', user.profile)
-        const userType = user.profile.user_type || 'kol'
+        
+        // Check if we need to update user type based on stored preference
+        if (storedUserType && user.profile.user_type !== storedUserType) {
+          console.log('🔄 Updating user type from', user.profile.user_type, 'to', storedUserType)
+          // Update the user profile with correct type
+          // This will be handled by the useAuth hook's updateProfile method
+        }
+        
+        const userType = user.profile.user_type
         console.log('🎯 Redirecting to dashboard:', userType)
+        localStorage.removeItem('oauth_user_type') // Clean up
         navigate(`/dashboard/${userType}`, { replace: true })
       } else if (user && !user.profile) {
         console.log('⚠️ User exists but no profile found:', user)
-        // Wait a bit longer for profile to load
+        // Wait a bit longer for profile to load or be created by trigger
         setTimeout(() => {
           if (!user?.profile) {
             console.log('❌ Profile still not loaded, redirecting to auth')
+            localStorage.removeItem('oauth_user_type') // Clean up
             navigate('/auth')
           }
         }, 3000)
@@ -57,6 +72,7 @@ export default function AuthCallback() {
         setTimeout(() => {
           if (!user) {
             console.log('❌ Still no user, redirecting to auth')
+            localStorage.removeItem('oauth_user_type') // Clean up
             navigate('/auth')
           }
         }, 2000)
@@ -64,7 +80,7 @@ export default function AuthCallback() {
     }
 
     handleCallback()
-  }, [user, loading, navigate, searchParams])
+  }, [user, loading, navigate, searchParams, toast])
 
   return (
     <div className="flex items-center justify-center min-h-screen">
