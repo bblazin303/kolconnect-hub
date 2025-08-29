@@ -45,42 +45,56 @@ export function useAuth() {
 
   const loadUserProfile = async (authUser: User) => {
     try {
+      console.log('🔄 Loading user profile for:', authUser.id)
+      console.log('🔄 User metadata:', authUser.user_metadata)
+      
       // Get user profile
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('users')
         .select('*')
         .eq('id', authUser.id)
         .single()
 
+      console.log('👤 User profile result:', { profile, profileError })
+
       let kolProfile = null
       let projectProfile = null
 
       if (profile) {
+        console.log('✅ Profile found, user_type:', profile.user_type)
+        
         if (profile.user_type === 'kol') {
-          const { data } = await supabase
+          const { data, error: kolError } = await supabase
             .from('kol_profiles')
             .select('*')
             .eq('user_id', authUser.id)
             .single()
+          console.log('🎯 KOL profile result:', { data, kolError })
           kolProfile = data
         } else if (profile.user_type === 'project') {
-          const { data } = await supabase
+          const { data, error: projectError } = await supabase
             .from('project_profiles')
             .select('*')
             .eq('user_id', authUser.id)
             .single()
+          console.log('🏢 Project profile result:', { data, projectError })
           projectProfile = data
         }
+      } else {
+        console.log('❌ No profile found for user:', authUser.id)
       }
 
-      setUser({
+      const userData = {
         ...authUser,
         profile,
         kolProfile,
         projectProfile
-      })
+      }
+      
+      console.log('📋 Final user data:', userData)
+      setUser(userData)
     } catch (error) {
-      console.error('Error loading user profile:', error)
+      console.error('❌ Error loading user profile:', error)
     } finally {
       setLoading(false)
     }
@@ -88,21 +102,27 @@ export function useAuth() {
 
   const signInWithTwitter = async (userType: 'kol' | 'project') => {
     try {
+      const redirectUrl = `${window.location.origin}/auth/callback?type=${userType}`
+      console.log('🐦 Starting Twitter OAuth with redirect:', redirectUrl)
+      console.log('🐦 User type:', userType)
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?type=${userType}`
+          redirectTo: redirectUrl
         }
       })
       
+      console.log('🐦 OAuth response:', { data, error })
+      
       if (error) {
-        console.error('OAuth error:', error)
+        console.error('❌ OAuth error:', error)
         throw error
       }
       
       return { data, error: null }
     } catch (error) {
-      console.error('Error signing in with Twitter:', error)
+      console.error('❌ Error signing in with Twitter:', error)
       return { data: null, error }
     }
   }
