@@ -17,28 +17,30 @@ import ProjectDashboard from "./pages/dashboard/ProjectDashboard";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/kols" element={<KOLDirectory />} />
-          <Route path="/kols/:kolId" element={<KOLProfile />} />
-          <Route path="/jobs" element={<JobBoard />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/dashboard/kol" element={<KOLDashboard />} />
-          <Route path="/dashboard/project" element={<ProjectDashboard />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider delayDuration={0}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/kols" element={<KOLDirectory />} />
+            <Route path="/kols/:kolId" element={<KOLProfile />} />
+            <Route path="/jobs" element={<JobBoard />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/dashboard/kol" element={<KOLDashboard />} />
+            <Route path="/dashboard/project" element={<ProjectDashboard />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <Toaster />
+          <Sonner />
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
