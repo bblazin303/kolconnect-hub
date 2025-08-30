@@ -345,8 +345,16 @@ export type Database = {
           bio: string | null
           created_at: string | null
           id: string
+          twitter_account_created_at: string | null
+          twitter_description: string | null
           twitter_followers_count: number | null
+          twitter_following_count: number | null
           twitter_id: string | null
+          twitter_listed_count: number | null
+          twitter_location: string | null
+          twitter_profile_image_url: string | null
+          twitter_public_metrics: Json | null
+          twitter_tweet_count: number | null
           twitter_username: string | null
           twitter_verified: boolean | null
           updated_at: string | null
@@ -358,8 +366,16 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           id: string
+          twitter_account_created_at?: string | null
+          twitter_description?: string | null
           twitter_followers_count?: number | null
+          twitter_following_count?: number | null
           twitter_id?: string | null
+          twitter_listed_count?: number | null
+          twitter_location?: string | null
+          twitter_profile_image_url?: string | null
+          twitter_public_metrics?: Json | null
+          twitter_tweet_count?: number | null
           twitter_username?: string | null
           twitter_verified?: boolean | null
           updated_at?: string | null
@@ -371,8 +387,16 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           id?: string
+          twitter_account_created_at?: string | null
+          twitter_description?: string | null
           twitter_followers_count?: number | null
+          twitter_following_count?: number | null
           twitter_id?: string | null
+          twitter_listed_count?: number | null
+          twitter_location?: string | null
+          twitter_profile_image_url?: string | null
+          twitter_public_metrics?: Json | null
+          twitter_tweet_count?: number | null
           twitter_username?: string | null
           twitter_verified?: boolean | null
           updated_at?: string | null

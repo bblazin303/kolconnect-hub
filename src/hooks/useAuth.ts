@@ -57,6 +57,22 @@ export function useAuth() {
 
       console.log('👤 User profile result:', { profile, profileError })
 
+      // If profile exists and has Twitter username, fetch enhanced metrics
+      if (profile?.twitter_username && !profile.twitter_public_metrics) {
+        console.log('📊 Fetching enhanced Twitter metrics...')
+        try {
+          const { data: metricsResult } = await supabase.functions.invoke('fetch-twitter-metrics', {
+            body: { 
+              userId: authUser.id, 
+              twitterUsername: profile.twitter_username 
+            }
+          })
+          console.log('📈 Twitter metrics result:', metricsResult)
+        } catch (metricsError) {
+          console.log('⚠️ Twitter metrics fetch failed (non-critical):', metricsError)
+        }
+      }
+
       let kolProfile = null
       let projectProfile = null
 
