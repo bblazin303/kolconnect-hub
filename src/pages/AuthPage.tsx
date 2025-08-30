@@ -300,7 +300,14 @@ export default function AuthPage() {
           {/* Additional Info */}
           <div className="mt-6 text-center">
             <p className="text-xs text-muted-foreground mb-2">
-              By signing up, you agree to our Terms of Service and Privacy Policy
+              By signing up, you agree to our{" "}
+              <a href="/terms" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                Terms of Service
+              </a>{" "}
+              and{" "}
+              <a href="/privacy" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                Privacy Policy
+              </a>
             </p>
             <p className="text-xs text-muted-foreground">
               Already have an account?{" "}

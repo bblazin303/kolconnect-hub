@@ -12,6 +12,8 @@ import JobBoard from "./pages/JobBoard";
 import Leaderboard from "./pages/Leaderboard";
 import AuthPage from "./pages/AuthPage";
 import AuthCallback from "./pages/AuthCallback";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import KOLDashboard from "./pages/dashboard/KOLDashboard";
 import ProjectDashboard from "./pages/dashboard/ProjectDashboard";
 
@@ -30,6 +32,8 @@ const App = () => {
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/dashboard/kol" element={<KOLDashboard />} />
             <Route path="/dashboard/project" element={<ProjectDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
