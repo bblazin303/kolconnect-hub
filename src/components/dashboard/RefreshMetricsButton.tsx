@@ -38,7 +38,7 @@ export function RefreshMetricsButton() {
       console.log('✅ Metrics refresh result:', data)
       
       toast({
-        title: "Success",
+        title: "Success! 🎉",
         description: "Twitter metrics updated successfully"
       })
 
@@ -58,15 +58,13 @@ export function RefreshMetricsButton() {
   }
 
   return (
-    <Button 
+    <button 
       onClick={handleRefreshMetrics}
       disabled={isRefreshing}
-      variant="outline"
-      size="sm"
-      className="ml-auto"
+      className="btn-secondary flex items-center space-x-2 text-sm px-4 py-2"
     >
-      <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-      Refresh Metrics
-    </Button>
+      <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+      <span>{isRefreshing ? 'Refreshing...' : 'Refresh Metrics'}</span>
+    </button>
   )
 }

@@ -2,84 +2,114 @@
 @tailwind components;
 @tailwind utilities;
 
-/* KOLHub Design System - Crypto-native dark theme with glassmorphism */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+/* Social Media Design System - Modern, vibrant, engaging */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    /* Dark crypto-native color scheme */
-    --background: 220 27% 8%;
-    --foreground: 213 27% 84%;
+    /* Modern social media color palette */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
 
-    --card: 220 27% 12%;
-    --card-foreground: 213 27% 84%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
 
-    --popover: 220 27% 12%;
-    --popover-foreground: 213 27% 84%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
 
-    /* Gold accent color */
-    --primary: 48 100% 50%;
-    --primary-foreground: 220 27% 8%;
+    /* Vibrant primary - Instagram-like gradient purple */
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 98%;
 
-    /* Emerald accent color */
-    --secondary: 158 64% 52%;
-    --secondary-foreground: 220 27% 8%;
+    /* Fresh secondary - Modern teal */
+    --secondary: 173 80% 40%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 220 27% 16%;
-    --muted-foreground: 213 27% 65%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
 
-    --accent: 220 27% 16%;
-    --accent-foreground: 213 27% 84%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 213 27% 84%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 220 27% 20%;
-    --input: 220 27% 16%;
-    --ring: 48 100% 50%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 262 83% 58%;
 
-    --radius: 0.75rem;
+    --radius: 12px;
 
-    /* Custom KOLHub design tokens */
-    --crypto-gold: 48 100% 50%;
-    --crypto-emerald: 158 64% 52%;
-    --crypto-blue: 217 91% 60%;
-    --crypto-purple: 262 83% 58%;
+    /* Social media design tokens */
+    --instagram-gradient: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+    --twitter-blue: 212 100% 50%;
+    --tiktok-red: 0 100% 60%;
+    --youtube-red: 0 100% 50%;
+    --linkedin-blue: 201 100% 35%;
     
-    /* Glassmorphism backgrounds */
-    --glass-primary: rgba(255, 215, 0, 0.1);
-    --glass-secondary: rgba(16, 185, 129, 0.1);
-    --glass-muted: rgba(255, 255, 255, 0.05);
+    /* Modern gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(262 83% 58%), hsl(292 84% 61%));
+    --gradient-secondary: linear-gradient(135deg, hsl(173 80% 40%), hsl(158 64% 52%));
+    --gradient-hero: linear-gradient(135deg, hsl(262 83% 58% / 0.1), hsl(173 80% 40% / 0.1));
+    --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.8), rgba(248,250,252,0.9));
+    --gradient-glow: radial-gradient(circle, hsl(262 83% 58% / 0.2), transparent 70%);
     
-    /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(48 100% 50% / 0.2), hsl(158 64% 52% / 0.2));
-    --gradient-card: linear-gradient(145deg, hsl(220 27% 12% / 0.8), hsl(220 27% 16% / 0.6));
-    --gradient-glow: radial-gradient(circle, hsl(48 100% 50% / 0.3), transparent 70%);
+    /* Modern shadows */
+    --shadow-soft: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-medium: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.06);
+    --shadow-large: 0 10px 15px rgba(0,0,0,0.08), 0 4px 6px rgba(0,0,0,0.05);
+    --shadow-glow: 0 0 30px hsl(262 83% 58% / 0.3);
+    --shadow-secondary: 0 0 20px hsl(173 80% 40% / 0.3);
     
-    /* Shadows */
-    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
-    --shadow-glow: 0 0 30px hsl(48 100% 50% / 0.3);
-    --shadow-emerald: 0 0 20px hsl(158 64% 52% / 0.4);
-    
-    /* Animations */
+    /* Smooth animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     --transition-glow: box-shadow 0.3s ease-in-out;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Dark mode - still social media inspired */
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 173 80% 40%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 262 83% 58%;
+
+    --gradient-card: linear-gradient(145deg, rgba(15,23,42,0.8), rgba(30,41,59,0.6));
+    --shadow-soft: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+    --shadow-medium: 0 4px 6px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.15);
+    --shadow-large: 0 10px 15px rgba(0,0,0,0.3), 0 4px 6px rgba(0,0,0,0.2);
   }
 
 }
@@ -92,96 +122,181 @@
   body {
     @apply bg-background text-foreground font-sans;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Orbitron', monospace;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .display-font {
+    font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
   }
 }
 
 @layer components {
-  /* Glassmorphism utility classes */
-  .glass-card {
-    @apply backdrop-blur-xl bg-white/5 border border-white/10;
-    box-shadow: var(--shadow-glass);
+  /* Modern social media utility classes */
+  .social-card {
+    @apply bg-white/80 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-medium;
   }
 
-  .glass-primary {
-    @apply backdrop-blur-xl border border-primary/20;
-    background: var(--glass-primary);
-    box-shadow: var(--shadow-glow);
+  .social-card-hover {
+    @apply transition-smooth hover:shadow-large hover:-translate-y-1 hover:bg-white;
   }
 
-  .glass-secondary {
-    @apply backdrop-blur-xl border border-secondary/20;
-    background: var(--glass-secondary);
-    box-shadow: var(--shadow-emerald);
+  .gradient-primary {
+    background: var(--gradient-primary);
   }
 
-  /* Gradient utilities */
-  .bg-gradient-hero {
+  .gradient-secondary {
+    background: var(--gradient-secondary);
+  }
+
+  .gradient-hero {
     background: var(--gradient-hero);
   }
 
-  .bg-gradient-card {
+  .gradient-card {
     background: var(--gradient-card);
   }
 
-  /* Glow effects */
-  .glow-primary {
+  /* Social media button styles */
+  .btn-social {
+    @apply px-6 py-3 rounded-full font-medium transition-smooth hover:scale-105;
+  }
+
+  .btn-primary {
+    @apply btn-social text-white;
+    background: var(--gradient-primary);
     box-shadow: var(--shadow-glow);
   }
 
-  .glow-secondary {
-    box-shadow: var(--shadow-emerald);
-  }
-
-  /* Animation utilities */
-  .transition-glow {
-    transition: var(--transition-glow);
-  }
-
-  .transition-smooth {
-    transition: var(--transition-smooth);
-  }
-
-  /* Typography utilities */
-  .text-gradient-gold {
-    @apply bg-gradient-to-r from-primary to-yellow-300 bg-clip-text text-transparent;
-  }
-
-  .text-gradient-emerald {
-    @apply bg-gradient-to-r from-secondary to-green-300 bg-clip-text text-transparent;
-  }
-
-  /* Interactive elements */
-  .btn-hero {
-    @apply glass-primary hover:glow-primary transition-glow;
+  .btn-primary:hover {
+    @apply shadow-lg scale-105;
+    filter: brightness(1.1);
   }
 
   .btn-secondary {
-    @apply glass-secondary hover:glow-secondary transition-glow;
+    @apply btn-social text-white;
+    background: var(--gradient-secondary);
+    box-shadow: var(--shadow-secondary);
   }
 
-  /* Card hover effects */
-  .card-hover {
-    @apply transition-smooth hover:scale-105 hover:glow-primary;
+  .btn-secondary:hover {
+    @apply shadow-lg scale-105;
+    filter: brightness(1.1);
   }
 
-  /* Custom scrollbar */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+  .btn-ghost {
+    @apply btn-social border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-muted/20;
+  /* Typography styles */
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary via-purple-500 to-secondary bg-clip-text text-transparent;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-primary/50 rounded-full;
+  .text-hero {
+    @apply text-4xl md:text-6xl font-bold display-font tracking-tight;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary/70;
+  .text-subtitle {
+    @apply text-lg md:text-xl text-muted-foreground leading-relaxed;
+  }
+
+  /* Profile and avatar styles */
+  .avatar-ring {
+    @apply ring-4 ring-primary/20 ring-offset-2 ring-offset-background;
+  }
+
+  .avatar-online {
+    @apply relative after:absolute after:bottom-1 after:right-1 after:h-3 after:w-3 after:bg-green-400 after:rounded-full after:ring-2 after:ring-white;
+  }
+
+  /* Social media feed styles */
+  .feed-item {
+    @apply social-card social-card-hover p-4 mb-4;
+  }
+
+  .engagement-bar {
+    @apply flex items-center space-x-4 text-sm text-muted-foreground pt-3 border-t border-gray-100;
+  }
+
+  /* Badge styles */
+  .badge-verified {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800;
+  }
+
+  .badge-premium {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+    background: var(--gradient-primary);
+    color: white;
+  }
+
+  /* Loading animations */
+  .pulse-social {
+    @apply animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-[length:200%_100%];
+    animation: social-pulse 1.5s infinite;
+  }
+
+  @keyframes social-pulse {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* Interactive elements */
+  .like-button {
+    @apply transition-all duration-200 hover:scale-110 active:scale-95;
+  }
+
+  .like-button.liked {
+    @apply text-red-500;
+    animation: heart-beat 0.3s ease-in-out;
+  }
+
+  @keyframes heart-beat {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+
+  /* Custom scrollbar - social media style */
+  .social-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .social-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded-full;
+  }
+
+  .social-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full hover:bg-gray-400;
+  }
+
+  /* Notification dot */
+  .notification-dot {
+    @apply absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full ring-2 ring-white;
+  }
+
+  /* Story ring - Instagram style */
+  .story-ring {
+    @apply p-0.5 rounded-full;
+    background: var(--instagram-gradient);
+  }
+
+  .story-ring-viewed {
+    @apply p-0.5 rounded-full bg-gray-300;
+  }
+
+  /* Modern form styles */
+  .input-social {
+    @apply w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-smooth;
+  }
+
+  .input-social:focus {
+    @apply bg-white shadow-medium;
   }
 }
