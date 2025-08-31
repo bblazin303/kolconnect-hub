@@ -285,7 +285,7 @@ export function TwitterProfileCard() {
           </div>
         ) : posts.length > 0 ? (
           <div className="space-y-4">
-            {posts.map((post) => (
+            {posts.slice(0, 3).map((post) => (
               <div key={post.id} className="bg-white border border-gray-200 rounded-xl p-4 hover:bg-gray-50/50 transition-colors">
                 {/* Post header with user info */}
                 <div className="flex items-start space-x-3 mb-3">

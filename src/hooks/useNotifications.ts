@@ -172,9 +172,6 @@ export function useNotifications() {
         )
       )
       setUnreadCount(prev => Math.max(0, prev - 1))
-
-      // Refetch to ensure consistency
-      setTimeout(() => fetchNotifications(), 1000)
     } catch (error) {
       console.error('Error marking notification as read:', error)
     }
@@ -199,9 +196,6 @@ export function useNotifications() {
       // Update local state immediately
       setNotifications(prev => prev.map(n => ({ ...n, read: true })))
       setUnreadCount(0)
-
-      // Refetch to ensure consistency
-      setTimeout(() => fetchNotifications(), 1000)
     } catch (error) {
       console.error('Error marking all notifications as read:', error)
     }
