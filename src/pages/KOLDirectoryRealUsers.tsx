@@ -46,6 +46,13 @@ export default function KOLDirectoryRealUsers() {
   const [sortBy, setSortBy] = useState("rating")
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
+  // Generate consistent colors for users
+  const generateUserColor = (username: string) => {
+    const colors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-orange-500', 'bg-teal-500']
+    const index = (username?.length || 0) % colors.length
+    return colors[index]
+  }
+
   useEffect(() => {
     loadKOLs()
   }, [])
@@ -128,8 +135,16 @@ export default function KOLDirectoryRealUsers() {
         <div className={`flex items-start justify-between ${isListView ? 'w-64 flex-shrink-0' : 'mb-4'}`}>
           <div className="flex items-center space-x-3">
             <Avatar className="h-12 w-12 ring-2 ring-primary/20">
-              <AvatarImage src={kol.twitter_profile_image_url} alt={kol.display_name} />
-              <AvatarFallback>{kol.display_name?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
+              <AvatarImage 
+                src={kol.twitter_profile_image_url?.replace('_normal', '_400x400')} 
+                alt={kol.display_name}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none'
+                }}
+              />
+              <AvatarFallback className={`${generateUserColor(kol.twitter_username)} text-white font-bold`}>
+                {(kol.display_name?.charAt(0) || kol.twitter_username?.charAt(0) || 'U').toUpperCase()}
+              </AvatarFallback>
             </Avatar>
             <div>
               <div className="flex items-center gap-2">
