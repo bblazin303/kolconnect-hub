@@ -98,7 +98,7 @@ export function useAuth() {
         if (shouldFetchMetrics) {
           console.log('📊 Fetching enhanced Twitter metrics...')
           // Don't await this - let it run in background
-          supabase.functions.invoke('fetch-twitter-metrics', {
+          supabase.functions.invoke('update-twitter-metrics', {
             body: { 
               userId: authUser.id, 
               twitterUsername: profile.twitter_username 

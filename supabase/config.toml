@@ -28,9 +28,6 @@ port = 54327
 enabled = true
 port = 54328
 
-[functions.fetch-twitter-metrics]
-verify_jwt = false
-
 [functions.fetch-twitter-posts]
 verify_jwt = false
 
