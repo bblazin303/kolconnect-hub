@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/hooks/useAuth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,10 +31,25 @@ interface HeaderProps {
 export function Header({ userType = null, isAuthenticated = false }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { user, isAuthenticated: authStatus, signOut } = useAuth();
+
+  // Use actual auth status and user data
+  const actuallyAuthenticated = authStatus && user?.profile;
+  const actualUserType = user?.profile?.user_type;
 
   const handleAuthClick = (type: 'kol' | 'project') => {
-    // In real app, this would trigger auth flow
     navigate(`/auth?type=${type}`);
+  };
+
+  const handleDashboardClick = () => {
+    if (actualUserType) {
+      navigate(`/dashboard/${actualUserType}`);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
   };
 
   return (
@@ -82,7 +98,7 @@ export function Header({ userType = null, isAuthenticated = false }: HeaderProps
 
           {/* Right Section */}
           <div className="flex items-center space-x-4">
-            {!isAuthenticated ? (
+            {!actuallyAuthenticated ? (
               <div className="hidden md:flex items-center space-x-3">
                 <Button 
                   variant="ghost" 
@@ -100,6 +116,16 @@ export function Header({ userType = null, isAuthenticated = false }: HeaderProps
               </div>
             ) : (
               <div className="flex items-center space-x-4">
+                {/* Dashboard Button */}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleDashboardClick}
+                  className="hidden sm:flex"
+                >
+                  Dashboard
+                </Button>
+
                 {/* Search */}
                 <Button variant="ghost" size="icon" className="hidden sm:flex">
                   <Search className="h-4 w-4" />
@@ -119,7 +145,7 @@ export function Header({ userType = null, isAuthenticated = false }: HeaderProps
                 {/* Add Job/Service Button */}
                 <Button size="sm" className="btn-secondary hidden sm:flex">
                   <Plus className="h-4 w-4 mr-2" />
-                  {userType === 'project' ? 'Post Job' : 'Add Service'}
+                  {actualUserType === 'project' ? 'Post Job' : 'Add Service'}
                 </Button>
 
                 {/* User Menu */}
@@ -127,9 +153,13 @@ export function Header({ userType = null, isAuthenticated = false }: HeaderProps
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src="/avatars/user.jpg" alt="User" />
+                        <AvatarImage 
+                          src={user?.profile?.twitter_profile_image_url || user?.profile?.avatar_url || "/avatars/user.jpg"} 
+                          alt="User" 
+                        />
                         <AvatarFallback>
-                          {userType === 'kol' ? 'K' : 'P'}
+                          {user?.profile?.twitter_username?.charAt(0).toUpperCase() || 
+                           (actualUserType === 'kol' ? 'K' : 'P')}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
@@ -138,24 +168,24 @@ export function Header({ userType = null, isAuthenticated = false }: HeaderProps
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none">
-                          {userType === 'kol' ? 'CryptoKOL' : 'ProjectName'}
+                          @{user?.profile?.twitter_username || 'User'}
                         </p>
                         <p className="text-xs leading-none text-muted-foreground">
-                          {userType === 'kol' ? '@cryptokol' : 'project@company.com'}
+                          {user?.email || 'user@example.com'}
                         </p>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleDashboardClick}>
                       <User className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
+                      <span>Dashboard</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Settings</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleSignOut}>
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Log out</span>
                     </DropdownMenuItem>
@@ -209,7 +239,7 @@ export function Header({ userType = null, isAuthenticated = false }: HeaderProps
                 How It Works
               </Link>
               
-              {!isAuthenticated && (
+              {!actuallyAuthenticated && (
                 <div className="flex flex-col space-y-2 pt-3 border-t border-border/50">
                   <Button 
                     variant="ghost" 
@@ -223,6 +253,26 @@ export function Header({ userType = null, isAuthenticated = false }: HeaderProps
                     className="btn-hero justify-start"
                   >
                     Post a Job
+                  </Button>
+                </div>
+              )}
+
+              {actuallyAuthenticated && (
+                <div className="flex flex-col space-y-2 pt-3 border-t border-border/50">
+                  <Button 
+                    variant="ghost" 
+                    onClick={handleDashboardClick}
+                    className="justify-start"
+                  >
+                    Dashboard
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    onClick={handleSignOut}
+                    className="justify-start text-red-500 hover:text-red-600"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Log out
                   </Button>
                 </div>
               )}

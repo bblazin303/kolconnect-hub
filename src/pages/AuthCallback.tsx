@@ -72,8 +72,12 @@ export default function AuthCallback() {
         const userType = storedUserType || user.profile.user_type
         console.log('🎯 Final userType for redirect:', userType)
         console.log('🎯 Redirecting to dashboard URL:', `/dashboard/${userType}`)
-        localStorage.removeItem('oauth_user_type') // Clean up
-        navigate(`/dashboard/${userType}`, { replace: true })
+        
+        // Small delay to ensure state is updated
+        setTimeout(() => {
+          localStorage.removeItem('oauth_user_type') // Clean up
+          navigate(`/dashboard/${userType}`, { replace: true })
+        }, 100)
       } else if (user && !user.profile) {
         console.log('⚠️ User exists but no profile found:', user)
         console.log('⚠️ User ID:', user.id)
