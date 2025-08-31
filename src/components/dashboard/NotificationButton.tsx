@@ -36,8 +36,8 @@ export function NotificationButton() {
           {unreadCount > 0 && (
             <Badge 
               variant="destructive" 
-              className="absolute top-0 right-0 h-3 w-3 rounded-full p-0 flex items-center justify-center z-10"
-              style={{ fontSize: '9px', lineHeight: '1' }}
+              className="absolute -top-1 -right-1 h-4 w-4 rounded-full p-0 flex items-center justify-center z-10 min-w-4"
+              style={{ fontSize: '10px', lineHeight: '1' }}
             >
               {unreadCount > 9 ? '9' : unreadCount}
             </Badge>
