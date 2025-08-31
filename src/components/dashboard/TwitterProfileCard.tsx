@@ -1,6 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { CalendarDays, MapPin, Users, MessageSquare, Heart, Repeat2 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { 
+  MapPin, 
+  CalendarDays, 
+  Users, 
+  MessageSquare, 
+  Heart, 
+  Repeat2, 
+  CheckCircle,
+  ExternalLink,
+  MessageCircle,
+  Share
+} from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
 import { RefreshMetricsButton } from './RefreshMetricsButton'
@@ -111,11 +123,20 @@ export function TwitterProfileCard() {
     }
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
+  const formatTimeAgo = (dateString: string) => {
+    const now = new Date()
+    const date = new Date(dateString)
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+    
+    if (diffInSeconds < 60) return `${diffInSeconds}s`
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m`
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h`
+    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d`
+    
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
       day: 'numeric',
-      year: 'numeric'
+      year: now.getFullYear() !== date.getFullYear() ? 'numeric' : undefined
     })
   }
 
@@ -219,7 +240,7 @@ export function TwitterProfileCard() {
               {user.profile.twitter_account_created_at && (
                 <div className="flex items-center space-x-2 bg-green-50/70 px-3 py-1.5 rounded-full border border-green-100">
                   <CalendarDays className="h-4 w-4 text-green-600" />
-                  <span className="text-gray-700">Joined {formatDate(user.profile.twitter_account_created_at)}</span>
+                  <span className="text-gray-700">Joined {formatTimeAgo(user.profile.twitter_account_created_at)}</span>
                 </div>
               )}
             </div>
@@ -263,26 +284,72 @@ export function TwitterProfileCard() {
             ))}
           </div>
         ) : posts.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {posts.map((post) => (
-              <div key={post.id} className="feed-item">
-                <p className="text-gray-700 mb-3 leading-relaxed">{post.text}</p>
-                <div className="engagement-bar">
-                  <span className="text-xs text-gray-500 font-medium">{formatDate(post.created_at)}</span>
-                  <div className="flex items-center space-x-4">
-                    <button className="like-button flex items-center space-x-1 hover:text-red-500 text-gray-500">
-                      <Heart className="h-4 w-4" />
-                      <span className="text-sm">{formatNumber(post.public_metrics?.like_count || 0)}</span>
-                    </button>
-                    <button className="like-button flex items-center space-x-1 hover:text-green-500 text-gray-500">
-                      <Repeat2 className="h-4 w-4" />
-                      <span className="text-sm">{formatNumber(post.public_metrics?.retweet_count || 0)}</span>
-                    </button>
-                    <button className="like-button flex items-center space-x-1 hover:text-blue-500 text-gray-500">
-                      <MessageSquare className="h-4 w-4" />
-                      <span className="text-sm">{formatNumber(post.public_metrics?.reply_count || 0)}</span>
-                    </button>
+              <div key={post.id} className="bg-white border border-gray-200 rounded-xl p-4 hover:bg-gray-50/50 transition-colors">
+                {/* Post header with user info */}
+                <div className="flex items-start space-x-3 mb-3">
+                  <Avatar className="h-10 w-10 ring-2 ring-white shadow-sm">
+                    <AvatarImage 
+                      src={post.author?.profile_image_url || user.profile.twitter_profile_image_url || user.profile.avatar_url} 
+                      alt={`@${post.author?.username || user.profile.twitter_username}`}
+                    />
+                    <AvatarFallback className="bg-blue-500 text-white text-sm font-semibold">
+                      {(post.author?.username || user.profile.twitter_username)?.charAt(0).toUpperCase() || 'T'}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2">
+                      <p className="font-semibold text-gray-900 truncate">
+                        @{post.author?.username || user.profile.twitter_username}
+                      </p>
+                      {user.profile.twitter_verified && (
+                        <Badge variant="secondary" className="h-4 w-4 p-0 rounded-full bg-blue-500">
+                          <CheckCircle className="h-3 w-3 text-white" />
+                        </Badge>
+                      )}
+                      <span className="text-gray-500 text-sm">·</span>
+                      <span className="text-gray-500 text-sm">{formatTimeAgo(post.created_at)}</span>
+                    </div>
                   </div>
+                  
+                  {/* Twitter link */}
+                  <button 
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                    onClick={() => window.open(`https://twitter.com/${user.profile.twitter_username}/status/${post.id}`, '_blank')}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </button>
+                </div>
+                
+                {/* Post content */}
+                <div className="mb-4">
+                  <p className="text-gray-900 leading-relaxed whitespace-pre-wrap break-words">
+                    {post.text}
+                  </p>
+                </div>
+                
+                {/* Engagement metrics - Twitter style */}
+                <div className="flex items-center justify-between text-gray-500 pt-2 border-t border-gray-100">
+                  <button className="flex items-center space-x-2 hover:text-blue-500 hover:bg-blue-50 rounded-full px-3 py-1.5 transition-all group">
+                    <MessageCircle className="h-4 w-4" />
+                    <span className="text-sm font-medium">{formatNumber(post.public_metrics?.reply_count || 0)}</span>
+                  </button>
+                  
+                  <button className="flex items-center space-x-2 hover:text-green-500 hover:bg-green-50 rounded-full px-3 py-1.5 transition-all group">
+                    <Repeat2 className="h-4 w-4" />
+                    <span className="text-sm font-medium">{formatNumber(post.public_metrics?.retweet_count || 0)}</span>
+                  </button>
+                  
+                  <button className="flex items-center space-x-2 hover:text-red-500 hover:bg-red-50 rounded-full px-3 py-1.5 transition-all group">
+                    <Heart className="h-4 w-4" />
+                    <span className="text-sm font-medium">{formatNumber(post.public_metrics?.like_count || 0)}</span>
+                  </button>
+                  
+                  <button className="flex items-center space-x-2 hover:text-blue-500 hover:bg-blue-50 rounded-full px-3 py-1.5 transition-all group">
+                    <Share className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
             ))}

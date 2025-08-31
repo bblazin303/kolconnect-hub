@@ -123,6 +123,28 @@ export function useNotifications() {
           })
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `recipient_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Message updated:', payload)
+          
+          // If a message was marked as read, update local state
+          if (payload.new.read === true && payload.old.read === false) {
+            setNotifications(prev =>
+              prev.map(n =>
+                n.id === payload.new.id ? { ...n, read: true } : n
+              )
+            )
+            setUnreadCount(prev => Math.max(0, prev - 1))
+          }
+        }
+      )
       .subscribe()
 
     return () => {
@@ -133,18 +155,26 @@ export function useNotifications() {
   const markAsRead = async (notificationId: string) => {
     try {
       // Mark message as read in database
-      await supabase
+      const { error } = await supabase
         .from('messages')
         .update({ read: true })
         .eq('id', notificationId)
 
-      // Update local state
+      if (error) {
+        console.error('Error marking message as read:', error)
+        return
+      }
+
+      // Update local state immediately
       setNotifications(prev =>
         prev.map(n =>
           n.id === notificationId ? { ...n, read: true } : n
         )
       )
       setUnreadCount(prev => Math.max(0, prev - 1))
+
+      // Refetch to ensure consistency
+      setTimeout(() => fetchNotifications(), 1000)
     } catch (error) {
       console.error('Error marking notification as read:', error)
     }
@@ -155,14 +185,23 @@ export function useNotifications() {
       if (!user?.id) return
 
       // Mark all messages as read
-      await supabase
+      const { error } = await supabase
         .from('messages')
         .update({ read: true })
         .eq('recipient_id', user.id)
         .eq('read', false)
 
+      if (error) {
+        console.error('Error marking all messages as read:', error)
+        return
+      }
+
+      // Update local state immediately
       setNotifications(prev => prev.map(n => ({ ...n, read: true })))
       setUnreadCount(0)
+
+      // Refetch to ensure consistency
+      setTimeout(() => fetchNotifications(), 1000)
     } catch (error) {
       console.error('Error marking all notifications as read:', error)
     }
