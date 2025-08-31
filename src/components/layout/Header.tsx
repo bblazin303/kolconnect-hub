@@ -116,7 +116,7 @@ export function Header({ userType = null, isAuthenticated = false }: HeaderProps
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-8">
                 {/* Dashboard Button */}
                 <Button 
                   variant="outline" 

@@ -19,7 +19,7 @@ export function DashboardHeader() {
           </div>
         </div>
         
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-8">
           <NotificationButton />
           
           <div className="flex items-center space-x-2">
