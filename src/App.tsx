@@ -46,6 +46,10 @@ const App = () => {
               <Route path="/dashboard/kol/analytics" element={<Analytics />} />
               <Route path="/dashboard/kol/profile" element={<Profile />} />
               <Route path="/dashboard/project" element={<ProjectDashboard />} />
+              <Route path="/dashboard/project/messages" element={<Messages />} />
+              <Route path="/dashboard/project/applications" element={<Applications />} />
+              <Route path="/dashboard/project/analytics" element={<Analytics />} />
+              <Route path="/dashboard/project/profile" element={<Profile />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />

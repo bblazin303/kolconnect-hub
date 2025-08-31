@@ -52,8 +52,13 @@ interface SearchUser {
   id: string
   twitter_username: string
   twitter_profile_image_url: string
+  user_type: string
   kol_profiles: Array<{
     display_name: string
+    verification_status: string
+  }>
+  project_profiles: Array<{
+    company_name: string
     verification_status: string
   }>
 }
@@ -70,6 +75,10 @@ export default function Messages() {
   const [userSearchQuery, setUserSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<SearchUser[]>([])
   const [searchLoading, setSearchLoading] = useState(false)
+
+  // Get user type for UI customization
+  const userType = user?.profile?.user_type || 'kol'
+  const isKOL = userType === 'kol'
 
   useEffect(() => {
     if (user?.id) {
@@ -170,23 +179,35 @@ export default function Messages() {
 
     setSearchLoading(true)
     try {
+      // Search for users of opposite type (if KOL, search projects and vice versa)
+      const searchUserType = isKOL ? 'project' : 'kol'
+      
+      console.log('🔍 Searching users:', { query, searchUserType, currentUserType: userType })
+      
       const { data, error } = await supabase
         .from('users')
         .select(`
           id,
           twitter_username,
           twitter_profile_image_url,
+          user_type,
           kol_profiles(
             display_name,
             verification_status
+          ),
+          project_profiles(
+            company_name,
+            verification_status
           )
         `)
-        .eq('user_type', 'kol')
+        .eq('user_type', searchUserType)
         .neq('id', user?.id) // Don't show current user
         .ilike('twitter_username', `%${query}%`)
         .limit(10)
 
       if (error) throw error
+      
+      console.log('🔍 Search results:', data)
       setSearchResults(data || [])
     } catch (error) {
       console.error('Error searching users:', error)
@@ -302,7 +323,12 @@ export default function Messages() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Messages</h1>
-          <p className="text-muted-foreground">Communicate with projects and other KOLs</p>
+          <p className="text-muted-foreground">
+            {isKOL 
+              ? 'Communicate with projects and other KOLs' 
+              : 'Connect with KOLs for your campaigns'
+            }
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
@@ -345,27 +371,35 @@ export default function Messages() {
                           </div>
                         ) : searchResults.length > 0 ? (
                           <div className="space-y-2">
-                            {searchResults.map((searchUser) => (
-                              <div
-                                key={searchUser.id}
-                                onClick={() => startConversation(searchUser.id)}
-                                className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent cursor-pointer"
-                              >
-                                <Avatar className="h-10 w-10">
-                                  <AvatarImage src={searchUser.twitter_profile_image_url?.replace('_normal', '_400x400')} />
-                                  <AvatarFallback>
-                                    {searchUser.twitter_username.charAt(0).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-sm">
-                                    {searchUser.kol_profiles[0]?.display_name || searchUser.twitter_username}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">@{searchUser.twitter_username}</p>
+                            {searchResults.map((searchUser) => {
+                              const displayName = searchUser.user_type === 'kol' 
+                                ? searchUser.kol_profiles[0]?.display_name || searchUser.twitter_username
+                                : searchUser.project_profiles[0]?.company_name || searchUser.twitter_username
+                              
+                              const userTypeLabel = searchUser.user_type === 'kol' ? 'KOL' : 'Project'
+                              
+                              return (
+                                <div
+                                  key={searchUser.id}
+                                  onClick={() => startConversation(searchUser.id)}
+                                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent cursor-pointer"
+                                >
+                                  <Avatar className="h-10 w-10">
+                                    <AvatarImage src={searchUser.twitter_profile_image_url?.replace('_normal', '_400x400')} />
+                                    <AvatarFallback>
+                                      {searchUser.twitter_username.charAt(0).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-sm">{displayName}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      @{searchUser.twitter_username} • {userTypeLabel}
+                                    </p>
+                                  </div>
+                                  <UserPlus className="h-4 w-4 text-muted-foreground" />
                                 </div>
-                                <UserPlus className="h-4 w-4 text-muted-foreground" />
-                              </div>
-                            ))}
+                              )
+                            })}
                           </div>
                         ) : userSearchQuery.length >= 2 ? (
                           <div className="text-center py-4 text-muted-foreground">

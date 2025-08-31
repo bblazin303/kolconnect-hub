@@ -140,15 +140,34 @@ export default function KOLProfile() {
   };
 
   const handleMessageUser = () => {
-    if (user) {
-      // Navigate to messages page with a parameter to start conversation
-      navigate('/dashboard/kol/messages', { 
-        state: { startConversationWith: kolId } 
-      });
-    } else {
+    console.log('🔥 Message button clicked', { 
+      user: user?.id, 
+      userType: user?.profile?.user_type,
+      isAuthenticated: !!user,
+      targetUserId: kolId 
+    });
+
+    if (!user) {
       // Redirect to auth if not logged in
+      console.log('❌ User not authenticated, redirecting to auth');
       navigate('/auth');
+      return;
     }
+
+    if (!user.profile?.user_type) {
+      console.log('❌ No user type found, redirecting to auth');
+      navigate('/auth');
+      return;
+    }
+
+    // Navigate to appropriate dashboard based on user type
+    const dashboardType = user.profile.user_type === 'kol' ? 'kol' : 'project';
+    const messagesPath = `/dashboard/${dashboardType}/messages`;
+    
+    console.log('✅ Navigating to messages:', messagesPath);
+    navigate(messagesPath, { 
+      state: { startConversationWith: kolId } 
+    });
   };
 
   if (loading) {
@@ -306,11 +325,20 @@ export default function KOLProfile() {
 
             {/* Action Buttons */}
             <div className="lg:ml-auto flex flex-col sm:flex-row gap-3">
-              <Button variant="outline" className="glass-card" onClick={handleMessageUser}>
+              <Button 
+                variant="outline" 
+                className="glass-card hover:bg-accent transition-colors" 
+                onClick={handleMessageUser}
+                disabled={loading}
+              >
                 <MessageCircle className="mr-2 h-4 w-4" />
-                Message
+                {user ? 'Send Message' : 'Login to Message'}
               </Button>
-              <Button onClick={() => setIsHireModalOpen(true)} className="btn-secondary">
+              <Button 
+                onClick={() => setIsHireModalOpen(true)} 
+                className="btn-secondary"
+                disabled={loading}
+              >
                 <DollarSign className="mr-2 h-4 w-4" />
                 Hire Me
               </Button>
