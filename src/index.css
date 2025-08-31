@@ -140,11 +140,11 @@
 @layer components {
   /* Modern social media utility classes */
   .social-card {
-    @apply bg-white/80 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-md;
+    @apply bg-white border border-gray-200/60 rounded-2xl shadow-sm;
   }
 
   .social-card-hover {
-    @apply transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-1 hover:bg-white;
+    @apply transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-0.5 hover:bg-white hover:border-gray-300/60;
   }
 
   .gradient-primary {
@@ -196,7 +196,7 @@
 
   /* Typography styles */
   .text-gradient {
-    @apply bg-gradient-to-r from-primary via-purple-500 to-secondary bg-clip-text text-transparent;
+    @apply text-gray-800 font-semibold;
   }
 
   .text-hero {
@@ -218,11 +218,11 @@
 
   /* Social media feed styles */
   .feed-item {
-    @apply social-card social-card-hover p-4 mb-4;
+    @apply bg-gray-50/50 border border-gray-200/40 rounded-xl p-4 mb-4 hover:bg-gray-50/70 transition-colors duration-200;
   }
 
   .engagement-bar {
-    @apply flex items-center space-x-4 text-sm text-muted-foreground pt-3 border-t border-gray-100;
+    @apply flex items-center justify-between text-sm text-gray-600 pt-3 border-t border-gray-200/60;
   }
 
   /* Badge styles */

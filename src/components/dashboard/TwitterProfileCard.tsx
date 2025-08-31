@@ -113,7 +113,7 @@ export function TwitterProfileCard() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
-              <h2 className="text-2xl font-display font-bold text-gradient">Twitter Profile</h2>
+              <h2 className="text-2xl font-semibold text-gray-800">Twitter Profile</h2>
               {user.profile.twitter_verified && (
                 <div className="badge-verified">
                   <svg className="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
@@ -157,7 +157,7 @@ export function TwitterProfileCard() {
                     console.log('✅ Profile image loaded successfully:', user.profile.twitter_profile_image_url)
                   }}
                 />
-                <AvatarFallback className="text-xl font-bold bg-gradient-primary text-white">
+                <AvatarFallback className="text-xl font-bold bg-blue-500 text-white">
                   {user.profile.twitter_username?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
@@ -168,48 +168,48 @@ export function TwitterProfileCard() {
           
           <div className="flex-1 space-y-4">
             <div>
-              <h3 className="text-2xl font-display font-bold text-gradient mb-1">@{user.profile.twitter_username}</h3>
+              <h3 className="text-2xl font-semibold text-gray-800 mb-1">@{user.profile.twitter_username}</h3>
               {user.profile.twitter_description && (
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-gray-600 leading-relaxed">
                   {user.profile.twitter_description}
                 </p>
               )}
             </div>
             
-            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
               {user.profile.twitter_location && (
-                <div className="flex items-center space-x-2 bg-gray-50 px-3 py-1 rounded-full">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  <span>{user.profile.twitter_location}</span>
+                <div className="flex items-center space-x-2 bg-blue-50/70 px-3 py-1.5 rounded-full border border-blue-100">
+                  <MapPin className="h-4 w-4 text-blue-600" />
+                  <span className="text-gray-700">{user.profile.twitter_location}</span>
                 </div>
               )}
               {user.profile.twitter_account_created_at && (
-                <div className="flex items-center space-x-2 bg-gray-50 px-3 py-1 rounded-full">
-                  <CalendarDays className="h-4 w-4 text-primary" />
-                  <span>Joined {formatDate(user.profile.twitter_account_created_at)}</span>
+                <div className="flex items-center space-x-2 bg-green-50/70 px-3 py-1.5 rounded-full border border-green-100">
+                  <CalendarDays className="h-4 w-4 text-green-600" />
+                  <span className="text-gray-700">Joined {formatDate(user.profile.twitter_account_created_at)}</span>
                 </div>
               )}
             </div>
             
             {/* Social Media Stats */}
             <div className="grid grid-cols-3 gap-4">
-              <div className="text-center p-3 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl">
-                <div className="flex items-center justify-center mb-1">
-                  <Users className="h-4 w-4 text-primary mr-1" />
+              <div className="text-center p-4 bg-blue-50/40 border border-blue-100/50 rounded-xl hover:bg-blue-50/60 transition-colors">
+                <div className="flex items-center justify-center mb-2">
+                  <Users className="h-5 w-5 text-blue-600" />
                 </div>
-                <div className="text-2xl font-bold text-primary">{formatNumber(user.profile.twitter_followers_count || 0)}</div>
-                <div className="text-xs text-muted-foreground">Followers</div>
+                <div className="text-2xl font-bold text-gray-800">{formatNumber(user.profile.twitter_followers_count || 0)}</div>
+                <div className="text-xs text-gray-600 font-medium">Followers</div>
               </div>
-              <div className="text-center p-3 bg-gradient-to-br from-secondary/5 to-secondary/10 rounded-xl">
-                <div className="text-2xl font-bold text-secondary">{formatNumber(user.profile.twitter_following_count || 0)}</div>
-                <div className="text-xs text-muted-foreground">Following</div>
+              <div className="text-center p-4 bg-emerald-50/40 border border-emerald-100/50 rounded-xl hover:bg-emerald-50/60 transition-colors">
+                <div className="text-2xl font-bold text-gray-800">{formatNumber(user.profile.twitter_following_count || 0)}</div>
+                <div className="text-xs text-gray-600 font-medium">Following</div>
               </div>
-              <div className="text-center p-3 bg-gradient-to-br from-purple-500/5 to-purple-500/10 rounded-xl">
-                <div className="flex items-center justify-center mb-1">
-                  <MessageSquare className="h-4 w-4 text-purple-500 mr-1" />
+              <div className="text-center p-4 bg-purple-50/40 border border-purple-100/50 rounded-xl hover:bg-purple-50/60 transition-colors">
+                <div className="flex items-center justify-center mb-2">
+                  <MessageSquare className="h-5 w-5 text-purple-600" />
                 </div>
-                <div className="text-2xl font-bold text-purple-500">{formatNumber(user.profile.twitter_tweet_count || 0)}</div>
-                <div className="text-xs text-muted-foreground">Posts</div>
+                <div className="text-2xl font-bold text-gray-800">{formatNumber(user.profile.twitter_tweet_count || 0)}</div>
+                <div className="text-xs text-gray-600 font-medium">Posts</div>
               </div>
             </div>
           </div>
@@ -218,8 +218,8 @@ export function TwitterProfileCard() {
 
       {/* Recent Posts - Social Media Feed Style */}
       <div className="social-card p-6 animate-fade-in">
-        <h3 className="text-xl font-display font-bold mb-4 flex items-center">
-          <MessageSquare className="h-5 w-5 mr-2 text-primary" />
+        <h3 className="text-xl font-semibold mb-4 flex items-center text-gray-800">
+          <MessageSquare className="h-5 w-5 mr-2 text-blue-600" />
           Recent Posts
         </h3>
         
@@ -230,24 +230,24 @@ export function TwitterProfileCard() {
             ))}
           </div>
         ) : posts.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {posts.map((post) => (
               <div key={post.id} className="feed-item">
-                <p className="text-foreground mb-3 leading-relaxed">{post.text}</p>
+                <p className="text-gray-700 mb-3 leading-relaxed">{post.text}</p>
                 <div className="engagement-bar">
-                  <span className="text-xs text-muted-foreground">{formatDate(post.created_at)}</span>
-                  <div className="flex items-center space-x-6">
-                    <button className="like-button flex items-center space-x-1 hover:text-red-500">
+                  <span className="text-xs text-gray-500 font-medium">{formatDate(post.created_at)}</span>
+                  <div className="flex items-center space-x-4">
+                    <button className="like-button flex items-center space-x-1 hover:text-red-500 text-gray-500">
                       <Heart className="h-4 w-4" />
-                      <span>{formatNumber(post.public_metrics?.like_count || 0)}</span>
+                      <span className="text-sm">{formatNumber(post.public_metrics?.like_count || 0)}</span>
                     </button>
-                    <button className="like-button flex items-center space-x-1 hover:text-green-500">
+                    <button className="like-button flex items-center space-x-1 hover:text-green-500 text-gray-500">
                       <Repeat2 className="h-4 w-4" />
-                      <span>{formatNumber(post.public_metrics?.retweet_count || 0)}</span>
+                      <span className="text-sm">{formatNumber(post.public_metrics?.retweet_count || 0)}</span>
                     </button>
-                    <button className="like-button flex items-center space-x-1 hover:text-blue-500">
+                    <button className="like-button flex items-center space-x-1 hover:text-blue-500 text-gray-500">
                       <MessageSquare className="h-4 w-4" />
-                      <span>{formatNumber(post.public_metrics?.reply_count || 0)}</span>
+                      <span className="text-sm">{formatNumber(post.public_metrics?.reply_count || 0)}</span>
                     </button>
                   </div>
                 </div>
@@ -256,11 +256,11 @@ export function TwitterProfileCard() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <MessageSquare className="h-8 w-8 text-white" />
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MessageSquare className="h-8 w-8 text-gray-400" />
             </div>
-            <p className="text-muted-foreground mb-2 font-medium">No recent posts available</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-gray-600 mb-2 font-medium">No recent posts available</p>
+            <p className="text-sm text-gray-500">
               Twitter API rate limits may prevent loading posts. Try the refresh button.
             </p>
           </div>
