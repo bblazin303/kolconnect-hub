@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -67,6 +68,8 @@ const generateUserColor = (username: string) => {
 
 export default function KOLProfile() {
   const { kolId } = useParams<{ kolId: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
   const [isHireModalOpen, setIsHireModalOpen] = useState(false);
   const [kol, setKol] = useState<RealKOL | null>(null);
@@ -133,6 +136,18 @@ export default function KOLProfile() {
       console.error('Error loading KOL data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleMessageUser = () => {
+    if (user) {
+      // Navigate to messages page with a parameter to start conversation
+      navigate('/dashboard/kol/messages', { 
+        state: { startConversationWith: kolId } 
+      });
+    } else {
+      // Redirect to auth if not logged in
+      navigate('/auth');
     }
   };
 
@@ -291,7 +306,7 @@ export default function KOLProfile() {
 
             {/* Action Buttons */}
             <div className="lg:ml-auto flex flex-col sm:flex-row gap-3">
-              <Button variant="outline" className="glass-card">
+              <Button variant="outline" className="glass-card" onClick={handleMessageUser}>
                 <MessageCircle className="mr-2 h-4 w-4" />
                 Message
               </Button>

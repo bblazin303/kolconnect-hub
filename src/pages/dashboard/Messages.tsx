@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { Input } from '@/components/ui/input'
@@ -15,8 +16,11 @@ import {
   MessageCircle, 
   Clock,
   CheckCircle2,
-  MoreHorizontal
+  MoreHorizontal,
+  Plus,
+  UserPlus
 } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 
 interface Message {
   id: string
@@ -44,19 +48,44 @@ interface Conversation {
   unread_count: number
 }
 
+interface SearchUser {
+  id: string
+  twitter_username: string
+  twitter_profile_image_url: string
+  kol_profiles: Array<{
+    display_name: string
+    verification_status: string
+  }>
+}
+
 export default function Messages() {
   const { user } = useAuth()
+  const location = useLocation()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [messages, setMessages] = useState<Message[]>([])
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
+  const [showNewMessageModal, setShowNewMessageModal] = useState(false)
+  const [userSearchQuery, setUserSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<SearchUser[]>([])
+  const [searchLoading, setSearchLoading] = useState(false)
 
   useEffect(() => {
     if (user?.id) {
       loadConversations()
     }
   }, [user?.id])
+
+  // Handle starting conversation from navigation state
+  useEffect(() => {
+    const state = location.state as { startConversationWith?: string }
+    if (state?.startConversationWith && user?.id && !loading) {
+      startConversation(state.startConversationWith)
+      // Clear the navigation state
+      window.history.replaceState({}, document.title)
+    }
+  }, [location.state, user?.id, loading])
 
   const loadConversations = async () => {
     try {
@@ -133,6 +162,85 @@ export default function Messages() {
     }
   }
 
+  const searchUsers = async (query: string) => {
+    if (!query.trim() || query.length < 2) {
+      setSearchResults([])
+      return
+    }
+
+    setSearchLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select(`
+          id,
+          twitter_username,
+          twitter_profile_image_url,
+          kol_profiles(
+            display_name,
+            verification_status
+          )
+        `)
+        .eq('user_type', 'kol')
+        .neq('id', user?.id) // Don't show current user
+        .ilike('twitter_username', `%${query}%`)
+        .limit(10)
+
+      if (error) throw error
+      setSearchResults(data || [])
+    } catch (error) {
+      console.error('Error searching users:', error)
+    } finally {
+      setSearchLoading(false)
+    }
+  }
+
+  const startConversation = async (userId: string) => {
+    setSelectedConversation(userId)
+    setShowNewMessageModal(false)
+    setUserSearchQuery('')
+    
+    // Load existing messages if any
+    await loadMessages(userId)
+    
+    // Add to conversations list if not already there or get user info from API
+    let existingConv = conversations.find(c => c.user_id === userId)
+    if (!existingConv) {
+      try {
+        const { data: userData, error } = await supabase
+          .from('users')
+          .select(`
+            id,
+            twitter_username,
+            twitter_profile_image_url,
+            kol_profiles(
+              display_name
+            )
+          `)
+          .eq('id', userId)
+          .single()
+
+        if (error) throw error
+        
+        if (userData) {
+          const newConv: Conversation = {
+            user_id: userId,
+            username: userData.twitter_username,
+            avatar_url: userData.twitter_profile_image_url,
+            last_message: '',
+            last_message_time: new Date().toISOString(),
+            unread_count: 0
+          }
+          setConversations(prev => [newConv, ...prev])
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error)
+      }
+    }
+    
+    setSearchResults([])
+  }
+
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation) return
 
@@ -201,10 +309,78 @@ export default function Messages() {
           {/* Conversations List */}
           <Card className="flex flex-col">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <MessageCircle className="h-5 w-5" />
-                Conversations
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <MessageCircle className="h-5 w-5" />
+                  Conversations
+                </CardTitle>
+                <Dialog open={showNewMessageModal} onOpenChange={setShowNewMessageModal}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Start New Conversation</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Search users by username..."
+                          value={userSearchQuery}
+                          onChange={(e) => {
+                            setUserSearchQuery(e.target.value)
+                            searchUsers(e.target.value)
+                          }}
+                          className="pl-10"
+                        />
+                      </div>
+                      
+                      <ScrollArea className="h-64">
+                        {searchLoading ? (
+                          <div className="text-center py-4 text-muted-foreground">
+                            Searching...
+                          </div>
+                        ) : searchResults.length > 0 ? (
+                          <div className="space-y-2">
+                            {searchResults.map((searchUser) => (
+                              <div
+                                key={searchUser.id}
+                                onClick={() => startConversation(searchUser.id)}
+                                className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent cursor-pointer"
+                              >
+                                <Avatar className="h-10 w-10">
+                                  <AvatarImage src={searchUser.twitter_profile_image_url?.replace('_normal', '_400x400')} />
+                                  <AvatarFallback>
+                                    {searchUser.twitter_username.charAt(0).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-sm">
+                                    {searchUser.kol_profiles[0]?.display_name || searchUser.twitter_username}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">@{searchUser.twitter_username}</p>
+                                </div>
+                                <UserPlus className="h-4 w-4 text-muted-foreground" />
+                              </div>
+                            ))}
+                          </div>
+                        ) : userSearchQuery.length >= 2 ? (
+                          <div className="text-center py-4 text-muted-foreground">
+                            No users found for "{userSearchQuery}"
+                          </div>
+                        ) : (
+                          <div className="text-center py-4 text-muted-foreground">
+                            Type to search for users...
+                          </div>
+                        )}
+                      </ScrollArea>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
