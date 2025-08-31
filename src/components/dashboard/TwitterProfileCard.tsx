@@ -11,7 +11,8 @@ import {
   CheckCircle,
   ExternalLink,
   MessageCircle,
-  Share
+  Share,
+  UserPlus
 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
@@ -255,6 +256,9 @@ export function TwitterProfileCard() {
                 <div className="text-xs text-gray-600 font-medium">Followers</div>
               </div>
               <div className="text-center p-4 bg-emerald-50/40 border border-emerald-100/50 rounded-xl hover:bg-emerald-50/60 transition-colors">
+                <div className="flex items-center justify-center mb-2">
+                  <UserPlus className="h-5 w-5 text-emerald-600" />
+                </div>
                 <div className="text-2xl font-bold text-gray-800">{formatNumber(user.profile.twitter_following_count || 0)}</div>
                 <div className="text-xs text-gray-600 font-medium">Following</div>
               </div>
