@@ -140,11 +140,11 @@
 @layer components {
   /* Modern social media utility classes */
   .social-card {
-    @apply bg-white/80 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-medium;
+    @apply bg-white/80 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-md;
   }
 
   .social-card-hover {
-    @apply transition-smooth hover:shadow-large hover:-translate-y-1 hover:bg-white;
+    @apply transition-smooth hover:shadow-xl hover:-translate-y-1 hover:bg-white;
   }
 
   .gradient-primary {
@@ -297,6 +297,6 @@
   }
 
   .input-social:focus {
-    @apply bg-white shadow-medium;
+    @apply bg-white shadow-md;
   }
 }
