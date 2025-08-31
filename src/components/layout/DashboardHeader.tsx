@@ -1,7 +1,7 @@
-import { Bell, Search } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/hooks/useAuth'
+import { NotificationButton } from '@/components/dashboard/NotificationButton'
 
 export function DashboardHeader() {
   const { user } = useAuth()
@@ -20,10 +20,7 @@ export function DashboardHeader() {
         </div>
         
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-4 w-4" />
-            <span className="absolute -top-1 -right-1 h-2 w-2 bg-primary rounded-full"></span>
-          </Button>
+          <NotificationButton />
           
           <div className="flex items-center space-x-2">
             <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center">
