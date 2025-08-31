@@ -46,33 +46,66 @@ export function TwitterProfileCard() {
   const fetchTwitterPosts = async () => {
     try {
       console.log('🐦 Fetching Twitter posts for:', user?.profile?.twitter_username)
-      const { data } = await supabase.functions.invoke('fetch-twitter-posts', {
+      console.log('🔍 User ID:', user?.id)
+      
+      if (!user?.profile?.twitter_username) {
+        console.log('❌ No Twitter username found')
+        setLoading(false)
+        return
+      }
+      
+      if (!user?.id) {
+        console.log('❌ No user ID found')
+        setLoading(false)
+        return
+      }
+      
+      const { data, error } = await supabase.functions.invoke('fetch-twitter-posts', {
         body: { 
-          twitterUsername: user?.profile?.twitter_username,
-          userId: user?.id
+          twitterUsername: user.profile.twitter_username,
+          userId: user.id
         }
       })
       
       console.log('🐦 Twitter posts response:', data)
+      console.log('🐦 Twitter posts error:', error)
+      
+      if (error) {
+        console.error('🚨 Edge function error:', error)
+        setLoading(false)
+        return
+      }
+      
       if (data?.posts && data.posts.length > 0) {
+        console.log('✅ Posts found:', data.posts.length)
         setPosts(data.posts)
-      } else if (data?.cached === false) {
+      } else if (data?.source === 'error') {
+        console.log('❌ Twitter API error:', data.error)
+      } else if (data?.cached === false || data?.source === 'fresh_api') {
+        console.log('🔄 Trying again in 3 seconds for fresh data...')
         // If not cached, try again in a few seconds for background task to complete
-        setTimeout(() => {
-          supabase.functions.invoke('fetch-twitter-posts', {
-            body: { 
-              twitterUsername: user?.profile?.twitter_username,
-              userId: user?.id
-            }
-          }).then(({ data: retryData }) => {
-            if (retryData?.posts) {
+        setTimeout(async () => {
+          try {
+            const { data: retryData } = await supabase.functions.invoke('fetch-twitter-posts', {
+              body: { 
+                twitterUsername: user.profile.twitter_username,
+                userId: user.id
+              }
+            })
+            console.log('🐦 Retry response:', retryData)
+            if (retryData?.posts && retryData.posts.length > 0) {
+              console.log('✅ Retry success with posts:', retryData.posts.length)
               setPosts(retryData.posts)
             }
-          })
+          } catch (retryError) {
+            console.error('❌ Retry failed:', retryError)
+          }
         }, 3000)
+      } else {
+        console.log('ℹ️ No posts available, response:', data)
       }
     } catch (error) {
-      console.error('Error fetching Twitter posts:', error)
+      console.error('❌ Error fetching Twitter posts:', error)
     } finally {
       setLoading(false)
     }
