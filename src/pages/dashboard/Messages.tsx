@@ -266,6 +266,12 @@ export default function Messages() {
     if (!newMessage.trim() || !selectedConversation) return
 
     try {
+      console.log('📤 Sending message:', { 
+        from: user?.id, 
+        to: selectedConversation, 
+        content: newMessage.trim().substring(0, 50) + '...' 
+      });
+
       const { error } = await supabase
         .from('messages')
         .insert({
@@ -275,9 +281,32 @@ export default function Messages() {
         })
 
       if (!error) {
+        const messageContent = newMessage.trim();
         setNewMessage('')
         await loadMessages(selectedConversation)
         await loadConversations()
+
+        // Send Twitter notification in background
+        console.log('🐦 Triggering Twitter notification...');
+        try {
+          supabase.functions.invoke('send-twitter-notification', {
+            body: {
+              recipientId: selectedConversation,
+              senderId: user?.id,
+              messageContent: messageContent
+            }
+          }).then(({ data, error: notificationError }) => {
+            if (notificationError) {
+              console.warn('⚠️ Twitter notification failed (non-critical):', notificationError);
+            } else {
+              console.log('✅ Twitter notification sent:', data);
+            }
+          }).catch(err => {
+            console.warn('⚠️ Twitter notification error (non-critical):', err);
+          });
+        } catch (err) {
+          console.warn('⚠️ Failed to trigger Twitter notification (non-critical):', err);
+        }
       }
     } catch (error) {
       console.error('Error sending message:', error)

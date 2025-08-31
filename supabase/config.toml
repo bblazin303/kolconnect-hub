@@ -33,3 +33,6 @@ verify_jwt = false
 
 [functions.update-twitter-metrics]
 verify_jwt = false
+
+[functions.send-twitter-notification]
+verify_jwt = true
