@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
+import { TwitterProfileCard } from '@/components/dashboard/TwitterProfileCard'
 import { DollarSign, Star, Briefcase, TrendingUp, Calendar, MessageSquare } from 'lucide-react'
 
 interface KOLStats {
@@ -92,15 +93,17 @@ export default function KOLDashboard() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Welcome Section */}
-        <div>
-          <h1 className="text-3xl font-bold">Welcome back, @{user?.profile?.twitter_username}!</h1>
-          <p className="text-muted-foreground mt-2">Here's your KOL performance overview</p>
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Welcome Section */}
+          <div>
+            <h1 className="text-3xl font-bold">Welcome back, @{user?.profile?.twitter_username}!</h1>
+            <p className="text-muted-foreground mt-2">Here's your KOL performance overview</p>
+          </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
@@ -144,10 +147,10 @@ export default function KOLDashboard() {
               <p className="text-xs text-muted-foreground">Pending review</p>
             </CardContent>
           </Card>
-        </div>
+          </div>
 
-        {/* Recent Opportunities */}
-        <Card>
+          {/* Recent Opportunities */}
+          <Card>
           <CardHeader>
             <CardTitle>Latest Campaign Opportunities</CardTitle>
           </CardHeader>
@@ -180,7 +183,13 @@ export default function KOLDashboard() {
               </div>
             )}
           </CardContent>
-        </Card>
+          </Card>
+        </div>
+
+        {/* Sidebar - Twitter Profile */}
+        <div className="lg:col-span-1">
+          <TwitterProfileCard />
+        </div>
       </div>
     </DashboardLayout>
   )
