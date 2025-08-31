@@ -28,13 +28,22 @@ export function TwitterProfileCard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    console.log('🔍 TwitterProfileCard user data:', user?.profile)
+    console.log('🔍 Twitter username:', user?.profile?.twitter_username)
+    console.log('🔍 Twitter followers:', user?.profile?.twitter_followers_count)
+    console.log('🔍 Twitter following:', user?.profile?.twitter_following_count)
+    console.log('🔍 Twitter tweets:', user?.profile?.twitter_tweet_count)
+    
     if (user?.profile?.twitter_username) {
       fetchTwitterPosts()
+    } else {
+      setLoading(false)
     }
   }, [user?.profile?.twitter_username])
 
   const fetchTwitterPosts = async () => {
     try {
+      console.log('🐦 Fetching Twitter posts for:', user?.profile?.twitter_username)
       const { data } = await supabase.functions.invoke('fetch-twitter-posts', {
         body: { 
           twitterUsername: user?.profile?.twitter_username,
@@ -42,6 +51,7 @@ export function TwitterProfileCard() {
         }
       })
       
+      console.log('🐦 Twitter posts response:', data)
       if (data?.posts) {
         setPosts(data.posts)
       }
@@ -66,7 +76,17 @@ export function TwitterProfileCard() {
     return num.toString()
   }
 
-  if (!user?.profile) return null
+  if (!user?.profile) {
+    console.log('❌ TwitterProfileCard: No user profile found')
+    return null
+  }
+
+  console.log('✅ TwitterProfileCard: Rendering with profile:', {
+    username: user.profile.twitter_username,
+    followers: user.profile.twitter_followers_count,
+    following: user.profile.twitter_following_count,
+    tweets: user.profile.twitter_tweet_count
+  })
 
   return (
     <div className="space-y-6">

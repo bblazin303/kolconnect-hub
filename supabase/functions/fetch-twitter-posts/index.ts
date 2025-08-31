@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { TwitterApi } from 'https://esm.sh/twitter-api-v2@1.25.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -40,45 +39,57 @@ serve(async (req) => {
       )
     }
 
-    // Initialize Twitter client
-    const twitterClient = new TwitterApi(twitterBearerToken)
-
     try {
-      // First get the user ID from the username
-      const userResponse = await twitterClient.v2.userByUsername(twitterUsername)
+      // First get the user ID from the username using Twitter API v2
+      const userUrl = `https://api.twitter.com/2/users/by/username/${twitterUsername}?user.fields=public_metrics,created_at,description,location,profile_image_url,verified`
       
-      if (!userResponse.data) {
+      const userResponse = await fetch(userUrl, {
+        headers: {
+          'Authorization': `Bearer ${twitterBearerToken}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!userResponse.ok) {
+        throw new Error(`Twitter API user lookup failed: ${userResponse.status}`)
+      }
+
+      const userData = await userResponse.json()
+      
+      if (!userData.data) {
         throw new Error('User not found on Twitter')
       }
 
-      const twitterUserId = userResponse.data.id
+      const twitterUserId = userData.data.id
 
-      // Fetch recent tweets
-      const tweetsResponse = await twitterClient.v2.userTimeline(twitterUserId, {
-        max_results: 3,
-        'tweet.fields': [
-          'created_at',
-          'public_metrics',
-          'text',
-          'author_id'
-        ],
-        expansions: ['author_id'],
-        'user.fields': ['profile_image_url', 'username']
+      // Fetch recent tweets using Twitter API v2
+      const tweetsUrl = `https://api.twitter.com/2/users/${twitterUserId}/tweets?max_results=3&tweet.fields=created_at,public_metrics,text&expansions=author_id&user.fields=username,profile_image_url`
+      
+      const tweetsResponse = await fetch(tweetsUrl, {
+        headers: {
+          'Authorization': `Bearer ${twitterBearerToken}`,
+          'Content-Type': 'application/json'
+        }
       })
 
-      const tweets = tweetsResponse.data?.data || []
-      const users = tweetsResponse.data?.includes?.users || []
-      const authorData = users.find(user => user.id === twitterUserId)
+      if (!tweetsResponse.ok) {
+        throw new Error(`Twitter API tweets lookup failed: ${tweetsResponse.status}`)
+      }
+
+      const tweetsData = await tweetsResponse.json()
+      const tweets = tweetsData.data || []
+      const users = tweetsData.includes?.users || []
+      const authorData = users.find((user: any) => user.id === twitterUserId)
 
       // Format tweets for response
-      const formattedTweets = tweets.map(tweet => ({
+      const formattedTweets = tweets.map((tweet: any) => ({
         id: tweet.id,
         text: tweet.text,
         created_at: tweet.created_at,
         public_metrics: tweet.public_metrics,
         author: {
           username: twitterUsername,
-          profile_image_url: authorData?.profile_image_url
+          profile_image_url: authorData?.profile_image_url || userData.data.profile_image_url
         }
       }))
 
