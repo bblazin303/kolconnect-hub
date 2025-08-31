@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { CalendarDays, MapPin, Users, MessageSquare, Heart, Repeat2 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
+import { RefreshMetricsButton } from './RefreshMetricsButton'
 
 interface TwitterPost {
   id: string
@@ -88,7 +89,9 @@ export function TwitterProfileCard() {
     username: user.profile.twitter_username,
     followers: user.profile.twitter_followers_count,
     following: user.profile.twitter_following_count,
-    tweets: user.profile.twitter_tweet_count
+    tweets: user.profile.twitter_tweet_count,
+    profileImage: user.profile.twitter_profile_image_url,
+    avatarUrl: user.profile.avatar_url
   })
 
   return (
@@ -96,11 +99,14 @@ export function TwitterProfileCard() {
       {/* Profile Header */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <span>Twitter Profile</span>
-            {user.profile.twitter_verified && (
-              <Badge variant="secondary" className="text-xs">Verified</Badge>
-            )}
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <span>Twitter Profile</span>
+              {user.profile.twitter_verified && (
+                <Badge variant="secondary" className="text-xs">Verified</Badge>
+              )}
+            </div>
+            <RefreshMetricsButton />
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -108,7 +114,14 @@ export function TwitterProfileCard() {
             <Avatar className="h-16 w-16 ring-2 ring-primary/20">
               <AvatarImage 
                 src={user.profile.twitter_profile_image_url || user.profile.avatar_url} 
-                alt={`@${user.profile.twitter_username}`} 
+                alt={`@${user.profile.twitter_username}`}
+                onError={(e) => {
+                  console.log('❌ Profile image failed to load:', user.profile.twitter_profile_image_url)
+                  e.currentTarget.style.display = 'none'
+                }}
+                onLoad={() => {
+                  console.log('✅ Profile image loaded successfully:', user.profile.twitter_profile_image_url)
+                }}
               />
               <AvatarFallback className="text-lg">
                 {user.profile.twitter_username?.charAt(0).toUpperCase() || 'U'}
