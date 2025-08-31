@@ -9,19 +9,25 @@ const corsHeaders = {
 // Cache for Twitter data to avoid rate limits
 const twitterCache = new Map()
 
-async function fetchTwitterDataWithRetry(url: string, headers: any, retries = 3): Promise<any> {
+async function fetchTwitterDataWithRetry(url: string, headers: any, retries = 2): Promise<any> {
   for (let i = 0; i < retries; i++) {
     try {
       const response = await fetch(url, { headers })
       
       if (response.status === 429) {
         const resetTime = response.headers.get('x-rate-limit-reset')
-        const waitTime = resetTime ? (parseInt(resetTime) * 1000 - Date.now()) / 1000 : 60
+        let waitTime = resetTime ? (parseInt(resetTime) * 1000 - Date.now()) / 1000 : 60
+        
+        // Cap wait time at 2 minutes to prevent long delays
+        waitTime = Math.min(waitTime, 120)
         console.log(`Rate limited, waiting ${waitTime}s before retry ${i + 1}/${retries}`)
         
-        if (i < retries - 1) {
-          await new Promise(resolve => setTimeout(resolve, Math.min(waitTime * 1000, 60000)))
+        if (i < retries - 1 && waitTime <= 120) {
+          await new Promise(resolve => setTimeout(resolve, waitTime * 1000))
           continue
+        } else {
+          // If wait time is too long, throw immediately to use cached data
+          throw new Error(`Rate limited: ${response.status} - Try again later`)
         }
       }
       
@@ -33,79 +39,115 @@ async function fetchTwitterDataWithRetry(url: string, headers: any, retries = 3)
     } catch (error) {
       console.error(`Attempt ${i + 1} failed:`, error)
       if (i === retries - 1) throw error
-      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)))
+      await new Promise(resolve => setTimeout(resolve, 2000 * (i + 1)))
     }
   }
 }
 
-async function backgroundFetchPosts(supabaseClient: any, twitterUsername: string, userId: string, twitterBearerToken: string) {
+async function fetchPosts(supabaseClient: any, twitterUsername: string, userId: string, twitterBearerToken: string) {
   try {
-    console.log('🔄 Background task: Fetching posts for', twitterUsername)
+    console.log('🔄 Fetching posts for', twitterUsername)
     
-    // Check cache first
+    // Check memory cache first
     const cacheKey = `posts_${twitterUsername}`
     const cached = twitterCache.get(cacheKey)
-    if (cached && Date.now() - cached.timestamp < 300000) { // 5 minutes cache
-      console.log('📋 Using cached posts')
-      return cached.data
+    if (cached && Date.now() - cached.timestamp < 600000) { // 10 minutes cache
+      console.log('📋 Using memory cached posts')
+      return { posts: cached.data, source: 'memory_cache' }
     }
 
-    // First get the user ID
-    const userUrl = `https://api.twitter.com/2/users/by/username/${twitterUsername}?user.fields=public_metrics,profile_image_url`
-    const userData = await fetchTwitterDataWithRetry(userUrl, {
-      'Authorization': `Bearer ${twitterBearerToken}`,
-      'Content-Type': 'application/json'
-    })
-
-    if (!userData.data) {
-      throw new Error('User not found on Twitter')
-    }
-
-    const twitterUserId = userData.data.id
-
-    // Fetch recent tweets
-    const tweetsUrl = `https://api.twitter.com/2/users/${twitterUserId}/tweets?max_results=5&tweet.fields=created_at,public_metrics,text&expansions=author_id&user.fields=username,profile_image_url`
-    const tweetsData = await fetchTwitterDataWithRetry(tweetsUrl, {
-      'Authorization': `Bearer ${twitterBearerToken}`,
-      'Content-Type': 'application/json'
-    })
-
-    const tweets = tweetsData.data || []
-    const users = tweetsData.includes?.users || []
-    const authorData = users.find((user: any) => user.id === twitterUserId)
-
-    // Format tweets
-    const formattedTweets = tweets.map((tweet: any) => ({
-      id: tweet.id,
-      text: tweet.text,
-      created_at: tweet.created_at,
-      public_metrics: tweet.public_metrics,
-      author: {
-        username: twitterUsername,
-        profile_image_url: authorData?.profile_image_url || userData.data.profile_image_url
-      }
-    }))
-
-    // Store in cache
-    twitterCache.set(cacheKey, {
-      data: formattedTweets,
-      timestamp: Date.now()
-    })
-
-    // Store in database for persistence
-    await supabaseClient
+    // Check database cache
+    const { data: userData } = await supabaseClient
       .from('users')
-      .update({
-        twitter_posts_cache: formattedTweets,
-        twitter_posts_updated_at: new Date().toISOString()
-      })
+      .select('twitter_posts_cache, twitter_posts_updated_at')
       .eq('id', userId)
+      .single()
 
-    console.log('✅ Background task completed, cached', formattedTweets.length, 'posts')
-    return formattedTweets
+    if (userData?.twitter_posts_cache && userData.twitter_posts_updated_at) {
+      const dbCacheAge = Date.now() - new Date(userData.twitter_posts_updated_at).getTime()
+      if (dbCacheAge < 1800000) { // 30 minutes database cache
+        console.log('💾 Using database cached posts')
+        // Update memory cache
+        twitterCache.set(cacheKey, {
+          data: userData.twitter_posts_cache,
+          timestamp: Date.now() - 300000 // Mark as 5 minutes old to refresh soon
+        })
+        return { posts: userData.twitter_posts_cache, source: 'db_cache' }
+      }
+    }
+
+    // Try to fetch fresh data from Twitter API
+    try {
+      // First get the user ID
+      const userUrl = `https://api.twitter.com/2/users/by/username/${twitterUsername}?user.fields=public_metrics,profile_image_url`
+      const userData = await fetchTwitterDataWithRetry(userUrl, {
+        'Authorization': `Bearer ${twitterBearerToken}`,
+        'Content-Type': 'application/json'
+      })
+
+      if (!userData.data) {
+        throw new Error('User not found on Twitter')
+      }
+
+      const twitterUserId = userData.data.id
+
+      // Fetch recent tweets
+      const tweetsUrl = `https://api.twitter.com/2/users/${twitterUserId}/tweets?max_results=5&tweet.fields=created_at,public_metrics,text&expansions=author_id&user.fields=username,profile_image_url`
+      const tweetsData = await fetchTwitterDataWithRetry(tweetsUrl, {
+        'Authorization': `Bearer ${twitterBearerToken}`,
+        'Content-Type': 'application/json'
+      })
+
+      const tweets = tweetsData.data || []
+      const users = tweetsData.includes?.users || []
+      const authorData = users.find((user: any) => user.id === twitterUserId)
+
+      // Format tweets
+      const formattedTweets = tweets.map((tweet: any) => ({
+        id: tweet.id,
+        text: tweet.text,
+        created_at: tweet.created_at,
+        public_metrics: tweet.public_metrics,
+        author: {
+          username: twitterUsername,
+          profile_image_url: authorData?.profile_image_url || userData.data.profile_image_url
+        }
+      }))
+
+      // Store in both caches
+      twitterCache.set(cacheKey, {
+        data: formattedTweets,
+        timestamp: Date.now()
+      })
+
+      // Store in database for persistence (don't await to avoid delays)
+      supabaseClient
+        .from('users')
+        .update({
+          twitter_posts_cache: formattedTweets,
+          twitter_posts_updated_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+        .then(() => console.log('💾 Posts saved to database'))
+        .catch((err: any) => console.error('❌ Failed to save to database:', err))
+
+      console.log('✅ Fresh posts fetched and cached:', formattedTweets.length)
+      return { posts: formattedTweets, source: 'fresh_api' }
+
+    } catch (apiError) {
+      console.error('❌ Twitter API failed:', apiError)
+      
+      // Fallback to older cached data if available
+      if (userData?.twitter_posts_cache) {
+        console.log('🔄 Using stale cache due to API failure')
+        return { posts: userData.twitter_posts_cache, source: 'stale_cache', error: 'Twitter API rate limited' }
+      }
+      
+      throw apiError
+    }
   } catch (error) {
-    console.error('❌ Background task failed:', error)
-    return []
+    console.error('❌ Failed to fetch posts:', error)
+    return { posts: [], source: 'error', error: error.message }
   }
 }
 
@@ -141,40 +183,20 @@ serve(async (req) => {
       )
     }
 
-    // Check cache first for immediate response
-    const cacheKey = `posts_${twitterUsername}`
-    const cached = twitterCache.get(cacheKey)
+    // Fetch posts with intelligent caching
+    const result = await fetchPosts(supabaseClient, twitterUsername, userId, twitterBearerToken)
     
-    // Get cached posts from database as fallback
-    const { data: userData } = await supabaseClient
-      .from('users')
-      .select('twitter_posts_cache, twitter_posts_updated_at')
-      .eq('id', userId)
-      .single()
-
-    let posts = []
-    
-    if (cached && Date.now() - cached.timestamp < 300000) {
-      posts = cached.data
-      console.log('📋 Using memory cache')
-    } else if (userData?.twitter_posts_cache && userData.twitter_posts_updated_at) {
-      const dbCacheAge = Date.now() - new Date(userData.twitter_posts_updated_at).getTime()
-      if (dbCacheAge < 900000) { // 15 minutes
-        posts = userData.twitter_posts_cache
-        console.log('💾 Using database cache')
-      }
-    }
-
-    // Start background task to refresh data (don't await)
-    EdgeRuntime.waitUntil(
-      backgroundFetchPosts(supabaseClient, twitterUsername, userId, twitterBearerToken)
-    )
-
     return new Response(
       JSON.stringify({ 
-        posts: posts,
-        message: posts.length > 0 ? 'Posts loaded from cache' : 'Posts loading in background',
-        cached: posts.length > 0
+        posts: result.posts,
+        message: result.source === 'fresh_api' ? 'Fresh posts loaded' : 
+                result.source === 'memory_cache' ? 'Posts loaded from cache' :
+                result.source === 'db_cache' ? 'Posts loaded from database' :
+                result.source === 'stale_cache' ? 'Showing cached posts (Twitter API rate limited)' :
+                'Unable to load posts',
+        cached: result.source !== 'fresh_api',
+        source: result.source,
+        error: result.error || null
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
