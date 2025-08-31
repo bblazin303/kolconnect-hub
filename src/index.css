@@ -144,7 +144,7 @@
   }
 
   .social-card-hover {
-    @apply transition-smooth hover:shadow-xl hover:-translate-y-1 hover:bg-white;
+    @apply transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-1 hover:bg-white;
   }
 
   .gradient-primary {
@@ -165,7 +165,7 @@
 
   /* Social media button styles */
   .btn-social {
-    @apply px-6 py-3 rounded-full font-medium transition-smooth hover:scale-105;
+    @apply px-6 py-3 rounded-full font-medium transition-all duration-300 ease-out hover:scale-105;
   }
 
   .btn-primary {
@@ -293,7 +293,7 @@
 
   /* Modern form styles */
   .input-social {
-    @apply w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-smooth;
+    @apply w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 ease-out;
   }
 
   .input-social:focus {
