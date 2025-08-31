@@ -17,6 +17,11 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import KOLDashboard from "./pages/dashboard/KOLDashboard";
 import ProjectDashboard from "./pages/dashboard/ProjectDashboard";
+import Messages from "./pages/dashboard/Messages";
+import Applications from "./pages/dashboard/Applications";
+import Analytics from "./pages/dashboard/Analytics";
+import KOLDirectoryRealUsers from "./pages/KOLDirectoryRealUsers";
+import Profile from "./pages/dashboard/Profile";
 
 const queryClient = new QueryClient();
 
@@ -28,7 +33,7 @@ const App = () => {
           <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/kols" element={<KOLDirectory />} />
+            <Route path="/kols" element={<KOLDirectoryRealUsers />} />
             <Route path="/kols/:kolId" element={<KOLProfile />} />
             <Route path="/jobs" element={<JobBoard />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
@@ -37,6 +42,10 @@ const App = () => {
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/dashboard/kol" element={<KOLDashboard />} />
+            <Route path="/dashboard/kol/messages" element={<Messages />} />
+            <Route path="/dashboard/kol/applications" element={<Applications />} />
+            <Route path="/dashboard/kol/analytics" element={<Analytics />} />
+            <Route path="/dashboard/kol/profile" element={<Profile />} />
             <Route path="/dashboard/project" element={<ProjectDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

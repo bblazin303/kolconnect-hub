@@ -17,11 +17,11 @@ import {
 
 const kolNavItems = [
   { name: 'Dashboard', href: '/dashboard/kol', icon: LayoutDashboard },
-  { name: 'Job Board', href: '/job-board', icon: Briefcase },
-  { name: 'Applications', href: '/applications', icon: Calendar },
-  { name: 'Messages', href: '/messages', icon: MessageSquare },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Profile', href: '/profile', icon: Settings },
+  { name: 'Job Board', href: '/jobs', icon: Briefcase },
+  { name: 'Applications', href: '/dashboard/kol/applications', icon: Calendar },
+  { name: 'Messages', href: '/dashboard/kol/messages', icon: MessageSquare },
+  { name: 'Analytics', href: '/dashboard/kol/analytics', icon: BarChart3 },
+  { name: 'Profile', href: '/dashboard/kol/profile', icon: Settings },
 ]
 
 const projectNavItems = [
