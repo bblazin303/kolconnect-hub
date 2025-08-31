@@ -56,8 +56,22 @@ export function TwitterProfileCard() {
       })
       
       console.log('🐦 Twitter posts response:', data)
-      if (data?.posts) {
+      if (data?.posts && data.posts.length > 0) {
         setPosts(data.posts)
+      } else if (data?.cached === false) {
+        // If not cached, try again in a few seconds for background task to complete
+        setTimeout(() => {
+          supabase.functions.invoke('fetch-twitter-posts', {
+            body: { 
+              twitterUsername: user?.profile?.twitter_username,
+              userId: user?.id
+            }
+          }).then(({ data: retryData }) => {
+            if (retryData?.posts) {
+              setPosts(retryData.posts)
+            }
+          })
+        }, 3000)
       }
     } catch (error) {
       console.error('Error fetching Twitter posts:', error)
@@ -113,17 +127,24 @@ export function TwitterProfileCard() {
           <div className="flex items-start space-x-4">
             <Avatar className="h-16 w-16 ring-2 ring-primary/20">
               <AvatarImage 
-                src={user.profile.twitter_profile_image_url || user.profile.avatar_url} 
+                src={user.profile.twitter_profile_image_url?.replace('_normal', '_400x400') || user.profile.avatar_url?.replace('_normal', '_400x400')} 
                 alt={`@${user.profile.twitter_username}`}
-                crossOrigin="anonymous"
                 onError={(e) => {
-                  console.log('❌ Profile image failed to load:', user.profile.twitter_profile_image_url)
-                  // Try the larger version without _normal
-                  const originalSrc = e.currentTarget.src
-                  if (originalSrc.includes('_normal')) {
-                    const largerSrc = originalSrc.replace('_normal', '_400x400')
-                    e.currentTarget.src = largerSrc
-                    console.log('🔄 Trying larger image:', largerSrc)
+                  console.log('❌ Profile image failed to load:', e.currentTarget.src)
+                  // Try different image sizes as fallback
+                  const originalSrc = user.profile.twitter_profile_image_url || user.profile.avatar_url
+                  if (originalSrc) {
+                    const fallbacks = [
+                      originalSrc.replace('_normal', '_bigger'),
+                      originalSrc.replace('_normal', ''),
+                      originalSrc,
+                      `https://ui-avatars.com/api/?name=${user.profile.twitter_username}&background=random&size=400`
+                    ]
+                    const currentIndex = fallbacks.indexOf(e.currentTarget.src)
+                    if (currentIndex < fallbacks.length - 1) {
+                      e.currentTarget.src = fallbacks[currentIndex + 1]
+                      console.log('🔄 Trying fallback image:', fallbacks[currentIndex + 1])
+                    }
                   }
                 }}
                 onLoad={() => {

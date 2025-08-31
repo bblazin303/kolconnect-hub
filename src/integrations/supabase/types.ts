@@ -352,6 +352,8 @@ export type Database = {
           twitter_id: string | null
           twitter_listed_count: number | null
           twitter_location: string | null
+          twitter_posts_cache: Json | null
+          twitter_posts_updated_at: string | null
           twitter_profile_image_url: string | null
           twitter_public_metrics: Json | null
           twitter_tweet_count: number | null
@@ -373,6 +375,8 @@ export type Database = {
           twitter_id?: string | null
           twitter_listed_count?: number | null
           twitter_location?: string | null
+          twitter_posts_cache?: Json | null
+          twitter_posts_updated_at?: string | null
           twitter_profile_image_url?: string | null
           twitter_public_metrics?: Json | null
           twitter_tweet_count?: number | null
@@ -394,6 +398,8 @@ export type Database = {
           twitter_id?: string | null
           twitter_listed_count?: number | null
           twitter_location?: string | null
+          twitter_posts_cache?: Json | null
+          twitter_posts_updated_at?: string | null
           twitter_profile_image_url?: string | null
           twitter_public_metrics?: Json | null
           twitter_tweet_count?: number | null
