@@ -12,6 +12,7 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleCallback = async () => {
       console.log('🔄 AuthCallback: Processing callback...')
+      console.log('🔍 Current URL:', window.location.href)
       console.log('🔍 Search params:', Object.fromEntries(searchParams.entries()))
       console.log('🔍 User state:', user)
       console.log('🔍 Loading state:', loading)
@@ -45,6 +46,8 @@ export default function AuthCallback() {
       // If user is authenticated, handle profile setup and redirect
       if (user?.profile) {
         console.log('✅ User authenticated with profile:', user.profile)
+        console.log('🔍 Profile user_type:', user.profile.user_type)
+        console.log('🔍 Stored user_type:', storedUserType)
         
         // Check if we need to update user type based on stored preference
         if (storedUserType && user.profile.user_type !== storedUserType) {
@@ -67,25 +70,30 @@ export default function AuthCallback() {
         }
         
         const userType = storedUserType || user.profile.user_type
-        console.log('🎯 Redirecting to dashboard:', userType)
+        console.log('🎯 Final userType for redirect:', userType)
+        console.log('🎯 Redirecting to dashboard URL:', `/dashboard/${userType}`)
         localStorage.removeItem('oauth_user_type') // Clean up
         navigate(`/dashboard/${userType}`, { replace: true })
       } else if (user && !user.profile) {
         console.log('⚠️ User exists but no profile found:', user)
+        console.log('⚠️ User ID:', user.id)
+        console.log('⚠️ User email:', user.email)
         // Wait a bit longer for profile to load or be created by trigger
         setTimeout(() => {
           if (!user?.profile) {
-            console.log('❌ Profile still not loaded, redirecting to auth')
+            console.log('❌ Profile still not loaded after timeout, redirecting to auth')
             localStorage.removeItem('oauth_user_type') // Clean up
             navigate('/auth')
           }
         }, 3000)
       } else {
         console.log('❌ No user found after callback')
+        console.log('❌ Current user state:', user)
+        console.log('❌ Loading state:', loading)
         // If no user after a short delay, redirect to auth
         setTimeout(() => {
           if (!user) {
-            console.log('❌ Still no user, redirecting to auth')
+            console.log('❌ Still no user after timeout, redirecting to auth')
             localStorage.removeItem('oauth_user_type') // Clean up
             navigate('/auth')
           }

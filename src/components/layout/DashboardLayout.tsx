@@ -24,6 +24,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   if (!isAuthenticated) {
     // Check if this might be an OAuth redirect by looking for hash fragments
     if (window.location.hash.includes('access_token') || window.location.search.includes('code=')) {
+      console.log('🔍 DashboardLayout: Detected OAuth fragments, showing loading...')
       return (
         <div className="flex items-center justify-center min-h-screen">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
@@ -31,9 +32,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
       )
     }
+    console.log('🚫 DashboardLayout: User not authenticated, redirecting to auth')
     return <Navigate to="/auth" replace />
   }
 
+  console.log('🏠 DashboardLayout: Rendering dashboard for user:', user?.profile?.twitter_username)
   return (
     <div className="min-h-screen bg-background">
       <DashboardSidebar />
