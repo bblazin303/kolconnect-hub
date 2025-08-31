@@ -36,7 +36,12 @@ export function useAuth() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return
-        console.log('🔄 Auth state change:', event, session?.user?.id)
+        console.log('🔄 Auth state change:', event, session ? {
+          user_id: session.user?.id,
+          email: session.user?.email,
+          access_token_present: !!session.access_token,
+          expires_at: session.expires_at
+        } : 'null')
         setSession(session)
         
         if (session?.user) {
@@ -134,6 +139,7 @@ export function useAuth() {
   const signInWithTwitter = async (userType: 'kol' | 'project', redirectTo?: string) => {
     try {
       console.log('🐦 Starting Twitter OAuth with user type:', userType)
+      console.log('🌐 Window origin:', window.location.origin)
       
       // Store user type in localStorage for retrieval after redirect
       localStorage.setItem('oauth_user_type', userType)
@@ -141,6 +147,11 @@ export function useAuth() {
       
       const redirectUrl = redirectTo || `${window.location.origin}/auth/callback`
       console.log('🔗 Using redirect URL:', redirectUrl)
+      
+      // Test Supabase client first
+      console.log('🔍 Testing Supabase client...')
+      const { data: testData, error: testError } = await supabase.auth.getSession()
+      console.log('🔍 Current session test:', { testData, testError })
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
@@ -154,14 +165,21 @@ export function useAuth() {
 
       if (error) {
         console.error('❌ Twitter OAuth error:', error)
+        console.error('❌ Error details:', {
+          message: error.message,
+          status: error.status,
+          name: error.name
+        })
         localStorage.removeItem('oauth_user_type') // Clean up on error
         throw error
       }
 
       console.log('✅ Twitter OAuth initiated successfully:', data)
       return { data, error: null }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error initiating Twitter OAuth:', error)
+      console.error('❌ Error type:', typeof error)
+      console.error('❌ Error keys:', Object.keys(error))
       localStorage.removeItem('oauth_user_type') // Clean up on error
       return { data: null, error }
     }
