@@ -115,15 +115,22 @@ export function TwitterProfileCard() {
               <AvatarImage 
                 src={user.profile.twitter_profile_image_url || user.profile.avatar_url} 
                 alt={`@${user.profile.twitter_username}`}
+                crossOrigin="anonymous"
                 onError={(e) => {
                   console.log('❌ Profile image failed to load:', user.profile.twitter_profile_image_url)
-                  e.currentTarget.style.display = 'none'
+                  // Try the larger version without _normal
+                  const originalSrc = e.currentTarget.src
+                  if (originalSrc.includes('_normal')) {
+                    const largerSrc = originalSrc.replace('_normal', '_400x400')
+                    e.currentTarget.src = largerSrc
+                    console.log('🔄 Trying larger image:', largerSrc)
+                  }
                 }}
                 onLoad={() => {
                   console.log('✅ Profile image loaded successfully:', user.profile.twitter_profile_image_url)
                 }}
               />
-              <AvatarFallback className="text-lg">
+              <AvatarFallback className="text-lg font-semibold bg-primary/10 text-primary">
                 {user.profile.twitter_username?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
@@ -217,7 +224,10 @@ export function TwitterProfileCard() {
           ) : (
             <div className="text-center py-8">
               <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No recent posts available</p>
+              <p className="text-muted-foreground mb-2">No recent posts available</p>
+              <p className="text-xs text-muted-foreground">
+                Twitter API rate limits may prevent loading posts. Try the refresh button.
+              </p>
             </div>
           )}
         </CardContent>
