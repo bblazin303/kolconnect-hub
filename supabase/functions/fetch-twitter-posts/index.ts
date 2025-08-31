@@ -6,6 +6,109 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Cache for Twitter data to avoid rate limits
+const twitterCache = new Map()
+
+async function fetchTwitterDataWithRetry(url: string, headers: any, retries = 3): Promise<any> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url, { headers })
+      
+      if (response.status === 429) {
+        const resetTime = response.headers.get('x-rate-limit-reset')
+        const waitTime = resetTime ? (parseInt(resetTime) * 1000 - Date.now()) / 1000 : 60
+        console.log(`Rate limited, waiting ${waitTime}s before retry ${i + 1}/${retries}`)
+        
+        if (i < retries - 1) {
+          await new Promise(resolve => setTimeout(resolve, Math.min(waitTime * 1000, 60000)))
+          continue
+        }
+      }
+      
+      if (!response.ok) {
+        throw new Error(`Twitter API error: ${response.status}`)
+      }
+      
+      return await response.json()
+    } catch (error) {
+      console.error(`Attempt ${i + 1} failed:`, error)
+      if (i === retries - 1) throw error
+      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)))
+    }
+  }
+}
+
+async function backgroundFetchPosts(supabaseClient: any, twitterUsername: string, userId: string, twitterBearerToken: string) {
+  try {
+    console.log('🔄 Background task: Fetching posts for', twitterUsername)
+    
+    // Check cache first
+    const cacheKey = `posts_${twitterUsername}`
+    const cached = twitterCache.get(cacheKey)
+    if (cached && Date.now() - cached.timestamp < 300000) { // 5 minutes cache
+      console.log('📋 Using cached posts')
+      return cached.data
+    }
+
+    // First get the user ID
+    const userUrl = `https://api.twitter.com/2/users/by/username/${twitterUsername}?user.fields=public_metrics,profile_image_url`
+    const userData = await fetchTwitterDataWithRetry(userUrl, {
+      'Authorization': `Bearer ${twitterBearerToken}`,
+      'Content-Type': 'application/json'
+    })
+
+    if (!userData.data) {
+      throw new Error('User not found on Twitter')
+    }
+
+    const twitterUserId = userData.data.id
+
+    // Fetch recent tweets
+    const tweetsUrl = `https://api.twitter.com/2/users/${twitterUserId}/tweets?max_results=5&tweet.fields=created_at,public_metrics,text&expansions=author_id&user.fields=username,profile_image_url`
+    const tweetsData = await fetchTwitterDataWithRetry(tweetsUrl, {
+      'Authorization': `Bearer ${twitterBearerToken}`,
+      'Content-Type': 'application/json'
+    })
+
+    const tweets = tweetsData.data || []
+    const users = tweetsData.includes?.users || []
+    const authorData = users.find((user: any) => user.id === twitterUserId)
+
+    // Format tweets
+    const formattedTweets = tweets.map((tweet: any) => ({
+      id: tweet.id,
+      text: tweet.text,
+      created_at: tweet.created_at,
+      public_metrics: tweet.public_metrics,
+      author: {
+        username: twitterUsername,
+        profile_image_url: authorData?.profile_image_url || userData.data.profile_image_url
+      }
+    }))
+
+    // Store in cache
+    twitterCache.set(cacheKey, {
+      data: formattedTweets,
+      timestamp: Date.now()
+    })
+
+    // Store in database for persistence
+    await supabaseClient
+      .from('users')
+      .update({
+        twitter_posts_cache: formattedTweets,
+        twitter_posts_updated_at: new Date().toISOString()
+      })
+      .eq('id', userId)
+
+    console.log('✅ Background task completed, cached', formattedTweets.length, 'posts')
+    return formattedTweets
+  } catch (error) {
+    console.error('❌ Background task failed:', error)
+    return []
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -28,7 +131,6 @@ serve(async (req) => {
       )
     }
 
-    // Get Twitter API credentials from Supabase secrets
     const twitterBearerToken = Deno.env.get('TWITTER_BEARER_TOKEN')
     
     if (!twitterBearerToken) {
@@ -39,81 +141,43 @@ serve(async (req) => {
       )
     }
 
-    try {
-      // First get the user ID from the username using Twitter API v2
-      const userUrl = `https://api.twitter.com/2/users/by/username/${twitterUsername}?user.fields=public_metrics,created_at,description,location,profile_image_url,verified`
-      
-      const userResponse = await fetch(userUrl, {
-        headers: {
-          'Authorization': `Bearer ${twitterBearerToken}`,
-          'Content-Type': 'application/json'
-        }
-      })
+    // Check cache first for immediate response
+    const cacheKey = `posts_${twitterUsername}`
+    const cached = twitterCache.get(cacheKey)
+    
+    // Get cached posts from database as fallback
+    const { data: userData } = await supabaseClient
+      .from('users')
+      .select('twitter_posts_cache, twitter_posts_updated_at')
+      .eq('id', userId)
+      .single()
 
-      if (!userResponse.ok) {
-        throw new Error(`Twitter API user lookup failed: ${userResponse.status}`)
+    let posts = []
+    
+    if (cached && Date.now() - cached.timestamp < 300000) {
+      posts = cached.data
+      console.log('📋 Using memory cache')
+    } else if (userData?.twitter_posts_cache && userData.twitter_posts_updated_at) {
+      const dbCacheAge = Date.now() - new Date(userData.twitter_posts_updated_at).getTime()
+      if (dbCacheAge < 900000) { // 15 minutes
+        posts = userData.twitter_posts_cache
+        console.log('💾 Using database cache')
       }
-
-      const userData = await userResponse.json()
-      
-      if (!userData.data) {
-        throw new Error('User not found on Twitter')
-      }
-
-      const twitterUserId = userData.data.id
-
-      // Fetch recent tweets using Twitter API v2
-      const tweetsUrl = `https://api.twitter.com/2/users/${twitterUserId}/tweets?max_results=3&tweet.fields=created_at,public_metrics,text&expansions=author_id&user.fields=username,profile_image_url`
-      
-      const tweetsResponse = await fetch(tweetsUrl, {
-        headers: {
-          'Authorization': `Bearer ${twitterBearerToken}`,
-          'Content-Type': 'application/json'
-        }
-      })
-
-      if (!tweetsResponse.ok) {
-        throw new Error(`Twitter API tweets lookup failed: ${tweetsResponse.status}`)
-      }
-
-      const tweetsData = await tweetsResponse.json()
-      const tweets = tweetsData.data || []
-      const users = tweetsData.includes?.users || []
-      const authorData = users.find((user: any) => user.id === twitterUserId)
-
-      // Format tweets for response
-      const formattedTweets = tweets.map((tweet: any) => ({
-        id: tweet.id,
-        text: tweet.text,
-        created_at: tweet.created_at,
-        public_metrics: tweet.public_metrics,
-        author: {
-          username: twitterUsername,
-          profile_image_url: authorData?.profile_image_url || userData.data.profile_image_url
-        }
-      }))
-
-      console.log('📊 Fetched tweets:', formattedTweets.length)
-
-      return new Response(
-        JSON.stringify({ 
-          posts: formattedTweets,
-          message: 'Twitter posts fetched successfully'
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-
-    } catch (twitterError) {
-      console.error('Twitter API error:', twitterError)
-      return new Response(
-        JSON.stringify({ 
-          error: 'Could not fetch Twitter posts',
-          posts: [],
-          details: twitterError.message 
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
     }
+
+    // Start background task to refresh data (don't await)
+    EdgeRuntime.waitUntil(
+      backgroundFetchPosts(supabaseClient, twitterUsername, userId, twitterBearerToken)
+    )
+
+    return new Response(
+      JSON.stringify({ 
+        posts: posts,
+        message: posts.length > 0 ? 'Posts loaded from cache' : 'Posts loading in background',
+        cached: posts.length > 0
+      }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
 
   } catch (error) {
     console.error('Error:', error)
