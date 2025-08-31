@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,199 +39,117 @@ import {
   Shield
 } from "lucide-react";
 
-interface KOL {
+interface RealKOL {
   id: string;
-  name: string;
-  handle: string;
-  avatar: string;
-  coverImage: string;
-  bio: string;
-  followers: string;
-  followersCount: number;
-  engagement: string;
-  engagementRate: number;
+  user_id: string;
+  display_name: string;
+  twitter_username: string;
+  twitter_followers_count: number;
+  twitter_verified: boolean;
+  twitter_profile_image_url: string;
+  twitter_description: string;
+  twitter_location: string;
+  hourly_rate: number;
   rating: number;
-  reviews: number;
-  specializations: string[];
-  isVerified: boolean;
-  successfulCampaigns: number;
-  hourlyRate: string;
-  hourlyRateMin: number;
-  hourlyRateMax: number;
-  responseTime: string;
-  location: string;
-  timezone: string;
-  languages: string[];
-  chainFocus: string[];
-  availabilityStatus: 'available' | 'busy' | 'unavailable';
-  lastActive: string;
-  portfolioItems: number;
-  totalEarnings: string;
-  avgROI: string;
-  joinedDate: string;
-  socialLinks: {
-    twitter: string;
-    linkedin?: string;
-    website?: string;
-  };
-  services: Array<{
-    type: string;
-    description: string;
-    price: string;
-    deliveryTime: string;
-    included: string[];
-  }>;
-  portfolio: Array<{
-    id: string;
-    title: string;
-    client: string;
-    type: string;
-    thumbnail: string;
-    metrics: {
-      reach: string;
-      engagement: string;
-      clicks: string;
-      roi: string;
-    };
-    date: string;
-    description: string;
-  }>;
-  testimonials: Array<{
-    id: string;
-    client: string;
-    avatar: string;
-    rating: number;
-    text: string;
-    date: string;
-    campaign: string;
-    verified: boolean;
-  }>;
+  total_campaigns: number;
+  specialties: string[];
+  availability: boolean;
+  verification_status: string;
+  created_at: string;
 }
 
-// Sample KOL data with comprehensive information
-const kolDataById: Record<string, KOL> = {
-  "1": {
-    id: "1",
-    name: "Alex Chen",
-    handle: "@cryptoalex",
-    avatar: "/avatars/alex.jpg",
-    coverImage: "/covers/alex-cover.jpg",
-    bio: "Crypto educator and DeFi researcher with 5+ years in the space. Former Goldman Sachs analyst turned full-time crypto content creator. Passionate about making complex DeFi concepts accessible to retail investors. Known for in-depth thread breakdowns and accurate market analysis.",
-    followers: "245K",
-    followersCount: 245000,
-    engagement: "8.2%",
-    engagementRate: 8.2,
-    rating: 4.9,
-    reviews: 127,
-    specializations: ["DeFi", "Layer 1", "Trading", "Market Analysis"],
-    isVerified: true,
-    successfulCampaigns: 89,
-    hourlyRate: "$200-300",
-    hourlyRateMin: 200,
-    hourlyRateMax: 300,
-    responseTime: "< 2 hours",
-    location: "Singapore",
-    timezone: "GMT+8",
-    languages: ["English", "Mandarin"],
-    chainFocus: ["Ethereum", "Solana", "Polygon"],
-    availabilityStatus: 'available',
-    lastActive: "2 hours ago",
-    portfolioItems: 15,
-    totalEarnings: "$245K",
-    avgROI: "340%",
-    joinedDate: "January 2022",
-    socialLinks: {
-      twitter: "https://twitter.com/cryptoalex",
-      linkedin: "https://linkedin.com/in/alexchen",
-      website: "https://alexchen.crypto"
-    },
-    services: [
-      {
-        type: "Twitter Thread",
-        description: "In-depth educational threads about DeFi protocols, market analysis, and trading strategies",
-        price: "$500-800",
-        deliveryTime: "24-48 hours",
-        included: ["10-15 tweets", "Custom graphics", "Engagement optimization", "Performance report"]
-      },
-      {
-        type: "Twitter Spaces",
-        description: "Host or co-host Twitter Spaces discussing crypto topics, interviewing founders",
-        price: "$300-500",
-        deliveryTime: "1-2 weeks",
-        included: ["60-90 min session", "Promotion", "Recording", "Follow-up content"]
-      },
-      {
-        type: "Video Content",
-        description: "Educational videos explaining protocols, market trends, and investment strategies",
-        price: "$800-1200",
-        deliveryTime: "3-5 days",
-        included: ["5-10 min video", "Script writing", "Professional editing", "Thumbnails"]
-      }
-    ],
-    portfolio: [
-      {
-        id: "1",
-        title: "Uniswap V4 Deep Dive Thread",
-        client: "Uniswap Labs",
-        type: "Twitter Thread",
-        thumbnail: "/portfolio/uniswap-thread.jpg",
-        metrics: {
-          reach: "2.1M",
-          engagement: "125K",
-          clicks: "45K",
-          roi: "420%"
-        },
-        date: "March 2024",
-        description: "Comprehensive breakdown of Uniswap V4 features, hooks system, and implications for DeFi"
-      },
-      {
-        id: "2",
-        title: "DeFi Summer Retrospective",
-        client: "Polygon Labs",
-        type: "Video Series",
-        thumbnail: "/portfolio/defi-summer.jpg",
-        metrics: {
-          reach: "1.8M",
-          engagement: "98K",
-          clicks: "67K",
-          roi: "280%"
-        },
-        date: "February 2024",
-        description: "Multi-part video series analyzing DeFi protocols and their evolution"
-      }
-    ],
-    testimonials: [
-      {
-        id: "1",
-        client: "Sarah from Uniswap Labs",
-        avatar: "/avatars/sarah-uni.jpg",
-        rating: 5,
-        text: "Alex delivered exceptional content that perfectly explained our V4 update. His technical depth combined with clear communication drove massive engagement and educated our community.",
-        date: "March 2024",
-        campaign: "Uniswap V4 Launch",
-        verified: true
-      },
-      {
-        id: "2",
-        client: "Marcus - Polygon Team",
-        avatar: "/avatars/marcus-poly.jpg",
-        rating: 5,
-        text: "Outstanding video series that helped our community understand DeFi concepts. Alex's analytical approach and market insights were exactly what we needed.",
-        date: "February 2024",
-        campaign: "DeFi Education Series",
-        verified: true
-      }
-    ]
-  }
-  // Add more KOL data as needed...
-};
+// Generate consistent colors for users
+const generateUserColor = (username: string) => {
+  const colors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-orange-500', 'bg-teal-500']
+  const index = (username?.length || 0) % colors.length
+  return colors[index]
+}
 
 export default function KOLProfile() {
   const { kolId } = useParams<{ kolId: string }>();
   const [activeTab, setActiveTab] = useState("overview");
   const [isHireModalOpen, setIsHireModalOpen] = useState(false);
+  const [kol, setKol] = useState<RealKOL | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const kol = kolId ? kolDataById[kolId] : null;
+  useEffect(() => {
+    if (kolId) {
+      loadKOLData(kolId);
+    }
+  }, [kolId]);
+
+  const loadKOLData = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select(`
+          id,
+          twitter_username,
+          twitter_followers_count,
+          twitter_verified,
+          twitter_profile_image_url,
+          twitter_description,
+          twitter_location,
+          created_at,
+          kol_profiles!inner(
+            user_id,
+            display_name,
+            hourly_rate,
+            rating,
+            total_campaigns,
+            specialties,
+            availability,
+            verification_status
+          )
+        `)
+        .eq('id', userId)
+        .eq('user_type', 'kol')
+        .single();
+
+      if (error) throw error;
+
+      if (data && data.kol_profiles.length > 0) {
+        const formattedKOL: RealKOL = {
+          id: data.id,
+          user_id: data.id,
+          display_name: data.kol_profiles[0].display_name || data.twitter_username,
+          twitter_username: data.twitter_username,
+          twitter_followers_count: data.twitter_followers_count || 0,
+          twitter_verified: data.twitter_verified,
+          twitter_profile_image_url: data.twitter_profile_image_url,
+          twitter_description: data.twitter_description,
+          twitter_location: data.twitter_location,
+          hourly_rate: data.kol_profiles[0].hourly_rate || 0,
+          rating: data.kol_profiles[0].rating || 0,
+          total_campaigns: data.kol_profiles[0].total_campaigns || 0,
+          specialties: data.kol_profiles[0].specialties || [],
+          availability: data.kol_profiles[0].availability || true,
+          verification_status: data.kol_profiles[0].verification_status || 'pending',
+          created_at: data.created_at
+        };
+        setKol(formattedKOL);
+      }
+    } catch (error) {
+      console.error('Error loading KOL data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header isAuthenticated={false} />
+        <div className="container mx-auto px-4 py-20">
+          <div className="animate-pulse space-y-6">
+            <div className="h-64 bg-muted rounded-lg"></div>
+            <div className="h-32 bg-muted rounded-lg"></div>
+            <div className="h-48 bg-muted rounded-lg"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!kol) {
     return (
@@ -251,7 +170,7 @@ export default function KOLProfile() {
     <Dialog open={isHireModalOpen} onOpenChange={setIsHireModalOpen}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Hire {kol.name}</DialogTitle>
+          <DialogTitle>Hire {kol.display_name}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div>
@@ -265,9 +184,10 @@ export default function KOLProfile() {
                 <SelectValue placeholder="Select service type" />
               </SelectTrigger>
               <SelectContent>
-                {kol.services.map((service, index) => (
-                  <SelectItem key={index} value={service.type}>{service.type}</SelectItem>
-                ))}
+                <SelectItem value="twitter-thread">Twitter Thread</SelectItem>
+                <SelectItem value="twitter-spaces">Twitter Spaces</SelectItem>
+                <SelectItem value="video-content">Video Content</SelectItem>
+                <SelectItem value="consultation">Consultation</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -295,14 +215,7 @@ export default function KOLProfile() {
       <Header isAuthenticated={false} />
       
       {/* Cover Section */}
-      <div 
-        className="relative h-64 bg-gradient-to-r from-primary/20 to-secondary/20"
-        style={{
-          backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4)), url(${kol.coverImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }}
-      >
+      <div className="relative h-64 bg-gradient-to-r from-primary/20 to-secondary/20">
         <div className="absolute inset-0 bg-gradient-to-r from-background/60 to-transparent" />
         
         {/* Breadcrumb */}
@@ -321,38 +234,56 @@ export default function KOLProfile() {
             {/* Avatar & Basic Info */}
             <div className="flex items-center gap-6">
               <Avatar className="h-24 w-24 ring-4 ring-primary/20">
-                <AvatarImage src={kol.avatar} alt={kol.name} />
-                <AvatarFallback className="text-2xl">{kol.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                <AvatarImage 
+                  src={kol.twitter_profile_image_url?.replace('_normal', '_400x400')} 
+                  alt={kol.display_name}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none'
+                  }}
+                />
+                <AvatarFallback className={`${generateUserColor(kol.twitter_username)} text-white text-2xl font-bold`}>
+                  {(kol.display_name?.charAt(0) || kol.twitter_username?.charAt(0) || 'U').toUpperCase()}
+                </AvatarFallback>
               </Avatar>
               
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-2xl lg:text-3xl font-bold">{kol.name}</h1>
-                  {kol.isVerified && (
-                    <CheckCircle className="h-6 w-6 text-crypto-blue" />
+                  <h1 className="text-2xl lg:text-3xl font-bold">{kol.display_name}</h1>
+                  {kol.twitter_verified && (
+                    <CheckCircle className="h-6 w-6 text-blue-500" />
                   )}
                   <Badge 
-                    variant={kol.availabilityStatus === 'available' ? 'default' : 'secondary'}
+                    variant={kol.availability ? 'default' : 'secondary'}
                     className="ml-2"
                   >
-                    {kol.availabilityStatus}
+                    {kol.availability ? 'Available' : 'Busy'}
                   </Badge>
                 </div>
                 
-                <p className="text-lg text-muted-foreground mb-3">{kol.handle}</p>
+                <p className="text-lg text-muted-foreground mb-3">@{kol.twitter_username}</p>
                 
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  {kol.twitter_location && (
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      {kol.twitter_location}
+                    </div>
+                  )}
                   <div className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
-                    {kol.location}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    {kol.timezone}
+                    <Badge 
+                      variant="outline" 
+                      className={`text-xs ${
+                        kol.verification_status === 'verified' ? 'border-green-500 text-green-600' : 
+                        kol.verification_status === 'pending' ? 'border-yellow-500 text-yellow-600' :
+                        'border-red-500 text-red-600'
+                      }`}
+                    >
+                      {kol.verification_status}
+                    </Badge>
                   </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    Joined {kol.joinedDate}
+                    Joined {new Date(kol.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                   </div>
                 </div>
               </div>
@@ -372,48 +303,36 @@ export default function KOLProfile() {
           </div>
 
           {/* Stats Row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 mt-8 pt-6 border-t border-border/50">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8 pt-6 border-t border-border/50">
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 text-primary mb-1">
                 <Users className="h-4 w-4" />
-                <span className="font-bold text-lg">{kol.followers}</span>
+                <span className="font-bold text-lg">{kol.twitter_followers_count.toLocaleString()}</span>
               </div>
               <p className="text-xs text-muted-foreground">Followers</p>
             </div>
             <div className="text-center">
-              <div className="flex items-center justify-center gap-1 text-secondary mb-1">
-                <TrendingUp className="h-4 w-4" />
-                <span className="font-bold text-lg">{kol.engagement}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Engagement</p>
-            </div>
-            <div className="text-center">
               <div className="flex items-center justify-center gap-1 text-primary mb-1">
                 <Star className="h-4 w-4 fill-primary" />
-                <span className="font-bold text-lg">{kol.rating}</span>
+                <span className="font-bold text-lg">{kol.rating.toFixed(1)}</span>
               </div>
-              <p className="text-xs text-muted-foreground">{kol.reviews} reviews</p>
+              <p className="text-xs text-muted-foreground">Rating</p>
             </div>
             <div className="text-center">
-              <div className="flex items-center justify-center gap-1 text-crypto-blue mb-1">
+              <div className="flex items-center justify-center gap-1 text-secondary mb-1">
                 <Award className="h-4 w-4" />
-                <span className="font-bold text-lg">{kol.successfulCampaigns}</span>
+                <span className="font-bold text-lg">{kol.total_campaigns}</span>
               </div>
               <p className="text-xs text-muted-foreground">Campaigns</p>
             </div>
             <div className="text-center">
-              <div className="flex items-center justify-center gap-1 text-secondary mb-1">
-                <BarChart3 className="h-4 w-4" />
-                <span className="font-bold text-lg">{kol.avgROI}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Avg ROI</p>
-            </div>
-            <div className="text-center">
               <div className="flex items-center justify-center gap-1 text-primary mb-1">
-                <MessageCircle className="h-4 w-4" />
-                <span className="font-bold text-lg">{kol.responseTime}</span>
+                <DollarSign className="h-4 w-4" />
+                <span className="font-bold text-lg">
+                  {kol.hourly_rate > 0 ? `$${kol.hourly_rate}/hr` : 'Not set'}
+                </span>
               </div>
-              <p className="text-xs text-muted-foreground">Response</p>
+              <p className="text-xs text-muted-foreground">Hourly Rate</p>
             </div>
           </div>
         </div>
@@ -438,7 +357,9 @@ export default function KOLProfile() {
                     <CardTitle>About</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground leading-relaxed">{kol.bio}</p>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {kol.twitter_description || 'No bio available yet.'}
+                    </p>
                   </CardContent>
                 </Card>
 
@@ -448,26 +369,34 @@ export default function KOLProfile() {
                   </CardHeader>
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
-                      {kol.specializations.map((spec) => (
-                        <Badge key={spec} variant="secondary" className="bg-secondary/20 text-secondary border-secondary/30">
-                          {spec}
-                        </Badge>
-                      ))}
+                      {kol.specialties && kol.specialties.length > 0 ? (
+                        kol.specialties.map((spec) => (
+                          <Badge key={spec} variant="secondary" className="bg-secondary/20 text-secondary border-secondary/30">
+                            {spec}
+                          </Badge>
+                        ))
+                      ) : (
+                        <span className="text-sm text-muted-foreground">No specialties listed yet.</span>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card className="glass-card border-0">
                   <CardHeader>
-                    <CardTitle>Blockchain Networks</CardTitle>
+                    <CardTitle>Social Links</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {kol.chainFocus.map((chain) => (
-                        <Badge key={chain} variant="outline" className="border-primary/30 text-primary">
-                          {chain}
-                        </Badge>
-                      ))}
+                    <div className="space-y-2">
+                      <a 
+                        href={`https://twitter.com/${kol.twitter_username}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-blue-500 hover:text-blue-600 transition-colors"
+                      >
+                        <Twitter className="h-4 w-4" />
+                        @{kol.twitter_username}
+                      </a>
                     </div>
                   </CardContent>
                 </Card>
@@ -481,51 +410,41 @@ export default function KOLProfile() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Languages:</span>
-                      <span className="font-medium">{kol.languages.join(', ')}</span>
+                      <span className="text-muted-foreground">Hourly Rate:</span>
+                      <span className="font-medium text-primary">
+                        {kol.hourly_rate > 0 ? `$${kol.hourly_rate}/hr` : 'Not set'}
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Rate:</span>
-                      <span className="font-medium text-primary">{kol.hourlyRate}/hr</span>
+                      <span className="text-muted-foreground">Campaigns:</span>
+                      <span className="font-medium text-secondary">{kol.total_campaigns}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Total Earned:</span>
-                      <span className="font-medium text-secondary">{kol.totalEarnings}</span>
+                      <span className="text-muted-foreground">Rating:</span>
+                      <span className="font-medium">{kol.rating.toFixed(1)}/5.0</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Last Active:</span>
-                      <span className="font-medium">{kol.lastActive}</span>
+                      <span className="text-muted-foreground">Status:</span>
+                      <span className="font-medium">{kol.availability ? 'Available' : 'Busy'}</span>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card className="glass-card border-0">
                   <CardHeader>
-                    <CardTitle>Social Links</CardTitle>
+                    <CardTitle>Contact</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <a href={kol.socialLinks.twitter} target="_blank" rel="noopener noreferrer" 
-                       className="flex items-center gap-3 text-crypto-blue hover:text-crypto-blue/80 transition-colors">
+                    <a 
+                      href={`https://twitter.com/${kol.twitter_username}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="flex items-center gap-3 text-blue-500 hover:text-blue-600 transition-colors"
+                    >
                       <Twitter className="h-4 w-4" />
                       Twitter Profile
                       <ExternalLink className="h-3 w-3 ml-auto" />
                     </a>
-                    {kol.socialLinks.linkedin && (
-                      <a href={kol.socialLinks.linkedin} target="_blank" rel="noopener noreferrer"
-                         className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors">
-                        <Linkedin className="h-4 w-4" />
-                        LinkedIn
-                        <ExternalLink className="h-3 w-3 ml-auto" />
-                      </a>
-                    )}
-                    {kol.socialLinks.website && (
-                      <a href={kol.socialLinks.website} target="_blank" rel="noopener noreferrer"
-                         className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors">
-                        <Globe className="h-4 w-4" />
-                        Website
-                        <ExternalLink className="h-3 w-3 ml-auto" />
-                      </a>
-                    )}
                   </CardContent>
                 </Card>
               </div>
@@ -534,53 +453,15 @@ export default function KOLProfile() {
 
           {/* Portfolio Tab */}
           <TabsContent value="portfolio" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {kol.portfolio.map((item) => (
-                <Card key={item.id} className="glass-card border-0 overflow-hidden card-hover">
-                  <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary/20 relative">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">
-                        {item.type}
-                      </Badge>
-                    </div>
-                  </div>
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start mb-3">
-                      <h3 className="font-semibold text-lg">{item.title}</h3>
-                      <span className="text-sm text-muted-foreground">{item.date}</span>
-                    </div>
-                    <p className="text-muted-foreground text-sm mb-4">{item.description}</p>
-                    
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="text-center p-3 glass-card rounded-lg">
-                        <div className="text-lg font-bold text-primary">{item.metrics.reach}</div>
-                        <div className="text-xs text-muted-foreground">Reach</div>
-                      </div>
-                      <div className="text-center p-3 glass-card rounded-lg">
-                        <div className="text-lg font-bold text-secondary">{item.metrics.engagement}</div>
-                        <div className="text-xs text-muted-foreground">Engagement</div>
-                      </div>
-                      <div className="text-center p-3 glass-card rounded-lg">
-                        <div className="text-lg font-bold text-crypto-blue">{item.metrics.clicks}</div>
-                        <div className="text-xs text-muted-foreground">Clicks</div>
-                      </div>
-                      <div className="text-center p-3 glass-card rounded-lg">
-                        <div className="text-lg font-bold text-primary">{item.metrics.roi}</div>
-                        <div className="text-xs text-muted-foreground">ROI</div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Client: {item.client}</span>
-                      <Button variant="ghost" size="sm">
-                        <Eye className="h-4 w-4 mr-1" />
-                        Details
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <Card className="glass-card border-0">
+              <CardContent className="p-8 text-center">
+                <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                <h3 className="text-lg font-semibold mb-2">Portfolio Coming Soon</h3>
+                <p className="text-muted-foreground">
+                  This KOL's portfolio and case studies will be available soon.
+                </p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Reviews Tab */}
@@ -596,7 +477,7 @@ export default function KOLProfile() {
                         <Star key={i} className={`h-4 w-4 ${i < Math.floor(kol.rating) ? 'text-primary fill-primary' : 'text-muted-foreground'}`} />
                       ))}
                     </div>
-                    <div className="text-sm text-muted-foreground">{kol.reviews} reviews</div>
+                    <div className="text-sm text-muted-foreground">No reviews yet</div>
                   </div>
                   
                   <div className="flex-1">
@@ -622,99 +503,31 @@ export default function KOLProfile() {
             </Card>
 
             {/* Individual Reviews */}
-            <div className="space-y-4">
-              {kol.testimonials.map((review) => (
-                <Card key={review.id} className="glass-card border-0">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={review.avatar} alt={review.client} />
-                        <AvatarFallback>{review.client.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                      </Avatar>
-                      
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h4 className="font-semibold">{review.client}</h4>
-                          {review.verified && (
-                            <Badge variant="outline" className="text-xs border-crypto-blue text-crypto-blue">
-                              <Verified className="h-3 w-3 mr-1" />
-                              Verified
-                            </Badge>
-                          )}
-                          <span className="text-sm text-muted-foreground">• {review.date}</span>
-                        </div>
-                        
-                        <div className="flex items-center gap-1 mb-3">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className={`h-4 w-4 ${i < review.rating ? 'text-primary fill-primary' : 'text-muted-foreground'}`} />
-                          ))}
-                        </div>
-                        
-                        <p className="text-muted-foreground mb-3">{review.text}</p>
-                        
-                        <div className="flex items-center gap-4 text-sm">
-                          <span className="text-muted-foreground">Campaign: {review.campaign}</span>
-                          <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="sm" className="h-8 px-3">
-                              <ThumbsUp className="h-3 w-3 mr-1" />
-                              Helpful
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <Card className="glass-card border-0">
+              <CardContent className="p-8 text-center">
+                <Star className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                <h3 className="text-lg font-semibold mb-2">No Reviews Yet</h3>
+                <p className="text-muted-foreground">
+                  This KOL hasn't received any reviews yet. Be the first to hire them!
+                </p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Services Tab */}
           <TabsContent value="services" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {kol.services.map((service, index) => (
-                <Card key={index} className="glass-card border-0">
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      {service.type === 'Twitter Thread' && <FileText className="h-5 w-5 text-primary" />}
-                      {service.type === 'Twitter Spaces' && <Mic className="h-5 w-5 text-secondary" />}
-                      {service.type === 'Video Content' && <Video className="h-5 w-5 text-crypto-blue" />}
-                      <CardTitle className="text-lg">{service.type}</CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm mb-4">{service.description}</p>
-                    
-                    <div className="space-y-3 mb-6">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Price:</span>
-                        <span className="font-semibold text-primary">{service.price}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Delivery:</span>
-                        <span className="font-medium">{service.deliveryTime}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="mb-6">
-                      <h4 className="font-medium text-sm mb-2">What's included:</h4>
-                      <ul className="space-y-1">
-                        {service.included.map((item, idx) => (
-                          <li key={idx} className="text-sm text-muted-foreground flex items-center gap-2">
-                            <CheckCircle className="h-3 w-3 text-primary" />
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    
-                    <Button className="w-full btn-secondary">
-                      Select Package
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <Card className="glass-card border-0">
+              <CardContent className="p-8 text-center">
+                <DollarSign className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                <h3 className="text-lg font-semibold mb-2">Services Available Soon</h3>
+                <p className="text-muted-foreground mb-4">
+                  This KOL is setting up their service packages. Check back soon!
+                </p>
+                <Button onClick={() => setIsHireModalOpen(true)} className="btn-secondary">
+                  Contact for Custom Quote
+                </Button>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Analytics Tab */}
@@ -732,7 +545,7 @@ export default function KOLProfile() {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Avg. Engagement</span>
-                      <span className="font-bold text-secondary">{kol.engagement}</span>
+                      <span className="font-bold text-secondary">N/A</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Client Retention</span>
@@ -740,7 +553,7 @@ export default function KOLProfile() {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Avg. ROI</span>
-                      <span className="font-bold text-primary">{kol.avgROI}</span>
+                      <span className="font-bold text-primary">N/A</span>
                     </div>
                   </div>
                 </CardContent>
