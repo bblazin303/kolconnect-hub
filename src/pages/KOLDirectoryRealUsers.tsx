@@ -51,7 +51,6 @@ export default function KOLDirectoryRealUsers() {
   }, [])
 
   const loadKOLs = async () => {
-    console.log('Loading KOLs...')
     try {
       const { data, error } = await supabase
         .from('users')
@@ -74,8 +73,6 @@ export default function KOLDirectoryRealUsers() {
         `)
         .eq('user_type', 'kol')
 
-      console.log('KOL query result:', { data, error })
-
       if (error) throw error
 
       // Flatten the data structure
@@ -95,7 +92,6 @@ export default function KOLDirectoryRealUsers() {
         verification_status: user.kol_profiles[0]?.verification_status || 'pending'
       })) || []
 
-      console.log('Formatted KOLs:', formattedKOLs)
       setKols(formattedKOLs)
     } catch (error) {
       console.error('Error loading KOLs:', error)
