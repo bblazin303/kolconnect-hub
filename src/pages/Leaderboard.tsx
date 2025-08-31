@@ -17,126 +17,11 @@ import {
   Crown,
   Target,
   BarChart3,
-  Calendar
+  Calendar,
+  Loader2
 } from "lucide-react";
+import { useLeaderboard } from "@/hooks/useLeaderboard";
 
-interface LeaderboardKOL {
-  id: string;
-  rank: number;
-  name: string;
-  handle: string;
-  avatar: string;
-  score: number;
-  change: number; // +/- from last period
-  followers: string;
-  engagement: string;
-  campaigns: number;
-  revenue: string;
-  rating: number;
-  specialization: string;
-  tier: 'diamond' | 'platinum' | 'gold' | 'silver' | 'bronze';
-  isVerified: boolean;
-  monthlyGrowth: number;
-  successRate: number;
-}
-
-const leaderboardData: LeaderboardKOL[] = [
-  {
-    id: "1",
-    rank: 1,
-    name: "Alex Chen",
-    handle: "@cryptoalex",
-    avatar: "/avatars/alex.jpg",
-    score: 98.5,
-    change: 2.1,
-    followers: "245K",
-    engagement: "8.2%",
-    campaigns: 89,
-    revenue: "$45,200",
-    rating: 4.9,
-    specialization: "DeFi",
-    tier: 'diamond',
-    isVerified: true,
-    monthlyGrowth: 15.3,
-    successRate: 96.2
-  },
-  {
-    id: "2",
-    rank: 2,
-    name: "Sarah Williams",
-    handle: "@defi_sarah",
-    avatar: "/avatars/sarah.jpg",
-    score: 95.8,
-    change: -0.5,
-    followers: "180K",
-    engagement: "9.1%",
-    campaigns: 67,
-    revenue: "$38,900",
-    rating: 4.8,
-    specialization: "DeFi",
-    tier: 'diamond',
-    isVerified: true,
-    monthlyGrowth: 12.7,
-    successRate: 94.8
-  },
-  {
-    id: "3",
-    rank: 3,
-    name: "Marcus Rodriguez",
-    handle: "@nft_marcus",
-    avatar: "/avatars/marcus.jpg",
-    score: 92.4,
-    change: 1.8,
-    followers: "320K",
-    engagement: "7.8%",
-    campaigns: 134,
-    revenue: "$52,100",
-    rating: 4.7,
-    specialization: "NFTs",
-    tier: 'platinum',
-    isVerified: true,
-    monthlyGrowth: 18.2,
-    successRate: 92.1
-  },
-  {
-    id: "4",
-    rank: 4,
-    name: "Emma Thompson",
-    handle: "@crypto_emma",
-    avatar: "/avatars/emma.jpg",
-    score: 89.7,
-    change: 3.2,
-    followers: "95K",
-    engagement: "12.3%",
-    campaigns: 78,
-    revenue: "$29,400",
-    rating: 5.0,
-    specialization: "Memecoins",
-    tier: 'platinum',
-    isVerified: true,
-    monthlyGrowth: 22.1,
-    successRate: 98.7
-  },
-  {
-    id: "5",
-    rank: 5,
-    name: "David Kim",
-    handle: "@blockchain_dave",
-    avatar: "/avatars/david.jpg",
-    score: 87.3,
-    change: -1.2,
-    followers: "156K",
-    engagement: "6.9%",
-    campaigns: 93,
-    revenue: "$34,800",
-    rating: 4.6,
-    specialization: "Layer 1",
-    tier: 'gold',
-    isVerified: true,
-    monthlyGrowth: 9.4,
-    successRate: 88.7
-  }
-];
 
 const getTierIcon = (tier: string) => {
   switch (tier) {
@@ -163,9 +48,52 @@ const getTierColor = (tier: string) => {
 export default function Leaderboard() {
   const [activeTab, setActiveTab] = useState("overall");
   const [timePeriod, setTimePeriod] = useState("monthly");
+  const { leaderboardData, loading, error } = useLeaderboard();
 
   const topThree = leaderboardData.slice(0, 3);
   const restOfList = leaderboardData.slice(3);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header isAuthenticated={false} />
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+            <p className="text-muted-foreground">Loading leaderboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header isAuthenticated={false} />
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <p className="text-destructive mb-2">Error loading leaderboard</p>
+            <p className="text-muted-foreground text-sm">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (leaderboardData.length === 0) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header isAuthenticated={false} />
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">No KOLs found in the leaderboard yet.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -230,115 +158,117 @@ export default function Leaderboard() {
         <Tabs value={activeTab}>
           <TabsContent value="overall" className="space-y-8">
             {/* Top 3 Podium */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {/* 2nd Place */}
-              <div className="md:order-1 md:mt-8">
-                <Card className={`glass-card border-0 text-center ${getTierColor(topThree[1].tier)}`}>
-                  <CardContent className="p-6">
-                    <div className="relative mb-4">
-                      <Avatar className="h-20 w-20 mx-auto ring-4 ring-gray-300/30">
-                        <AvatarImage src={topThree[1].avatar} alt={topThree[1].name} />
-                        <AvatarFallback>{topThree[1].name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                      </Avatar>
-                      <div className="absolute -top-2 -right-2 h-8 w-8 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                        2
+            {topThree.length >= 3 && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                {/* 2nd Place */}
+                <div className="md:order-1 md:mt-8">
+                  <Card className={`glass-card border-0 text-center ${getTierColor(topThree[1].tier)}`}>
+                    <CardContent className="p-6">
+                      <div className="relative mb-4">
+                        <Avatar className="h-20 w-20 mx-auto ring-4 ring-gray-300/30">
+                          <AvatarImage src={topThree[1].avatar} alt={topThree[1].name} />
+                          <AvatarFallback>{topThree[1].name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -top-2 -right-2 h-8 w-8 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                          2
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <h3 className="font-semibold">{topThree[1].name}</h3>
-                      {topThree[1].isVerified && <CheckCircle className="h-4 w-4 text-crypto-blue" />}
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-3">{topThree[1].handle}</p>
-                    <div className="text-2xl font-bold text-gradient-emerald mb-2">{topThree[1].score}</div>
-                    <Badge variant="secondary" className="mb-4">{topThree[1].specialization}</Badge>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div>
-                        <div className="text-primary font-medium">{topThree[1].followers}</div>
-                        <div className="text-muted-foreground">Followers</div>
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <h3 className="font-semibold">{topThree[1].name}</h3>
+                        {topThree[1].isVerified && <CheckCircle className="h-4 w-4 text-crypto-blue" />}
                       </div>
-                      <div>
-                        <div className="text-secondary font-medium">{topThree[1].engagement}</div>
-                        <div className="text-muted-foreground">Engagement</div>
+                      <p className="text-sm text-muted-foreground mb-3">{topThree[1].handle}</p>
+                      <div className="text-2xl font-bold text-gradient-emerald mb-2">{topThree[1].score}</div>
+                      <Badge variant="secondary" className="mb-4">{topThree[1].specialization}</Badge>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <div className="text-primary font-medium">{topThree[1].followers}</div>
+                          <div className="text-muted-foreground">Followers</div>
+                        </div>
+                        <div>
+                          <div className="text-secondary font-medium">{topThree[1].engagement}</div>
+                          <div className="text-muted-foreground">Engagement</div>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+                    </CardContent>
+                  </Card>
+                </div>
 
-              {/* 1st Place */}
-              <div className="md:order-2">
-                <Card className={`glass-card border-0 text-center ${getTierColor(topThree[0].tier)} glow-primary`}>
-                  <CardContent className="p-6">
-                    <div className="relative mb-4">
-                      <Avatar className="h-24 w-24 mx-auto ring-4 ring-primary/50">
-                        <AvatarImage src={topThree[0].avatar} alt={topThree[0].name} />
-                        <AvatarFallback>{topThree[0].name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                      </Avatar>
-                      <div className="absolute -top-2 -right-2 h-10 w-10 bg-gradient-to-br from-primary to-yellow-400 rounded-full flex items-center justify-center text-black font-bold">
-                        <Crown className="h-5 w-5" />
+                {/* 1st Place */}
+                <div className="md:order-2">
+                  <Card className={`glass-card border-0 text-center ${getTierColor(topThree[0].tier)} glow-primary`}>
+                    <CardContent className="p-6">
+                      <div className="relative mb-4">
+                        <Avatar className="h-24 w-24 mx-auto ring-4 ring-primary/50">
+                          <AvatarImage src={topThree[0].avatar} alt={topThree[0].name} />
+                          <AvatarFallback>{topThree[0].name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -top-2 -right-2 h-10 w-10 bg-gradient-to-br from-primary to-yellow-400 rounded-full flex items-center justify-center text-black font-bold">
+                          <Crown className="h-5 w-5" />
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <h3 className="font-bold text-lg">{topThree[0].name}</h3>
-                      {topThree[0].isVerified && <CheckCircle className="h-5 w-5 text-crypto-blue" />}
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-3">{topThree[0].handle}</p>
-                    <div className="text-3xl font-bold text-gradient-gold mb-2">{topThree[0].score}</div>
-                    <Badge className="mb-4 bg-primary text-primary-foreground">{topThree[0].specialization}</Badge>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div>
-                        <div className="text-primary font-medium">{topThree[0].followers}</div>
-                        <div className="text-muted-foreground">Followers</div>
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <h3 className="font-bold text-lg">{topThree[0].name}</h3>
+                        {topThree[0].isVerified && <CheckCircle className="h-5 w-5 text-crypto-blue" />}
                       </div>
-                      <div>
-                        <div className="text-secondary font-medium">{topThree[0].engagement}</div>
-                        <div className="text-muted-foreground">Engagement</div>
+                      <p className="text-sm text-muted-foreground mb-3">{topThree[0].handle}</p>
+                      <div className="text-3xl font-bold text-gradient-gold mb-2">{topThree[0].score}</div>
+                      <Badge className="mb-4 bg-primary text-primary-foreground">{topThree[0].specialization}</Badge>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <div className="text-primary font-medium">{topThree[0].followers}</div>
+                          <div className="text-muted-foreground">Followers</div>
+                        </div>
+                        <div>
+                          <div className="text-secondary font-medium">{topThree[0].engagement}</div>
+                          <div className="text-muted-foreground">Engagement</div>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+                    </CardContent>
+                  </Card>
+                </div>
 
-              {/* 3rd Place */}
-              <div className="md:order-3 md:mt-12">
-                <Card className={`glass-card border-0 text-center ${getTierColor(topThree[2].tier)}`}>
-                  <CardContent className="p-6">
-                    <div className="relative mb-4">
-                      <Avatar className="h-18 w-18 mx-auto ring-4 ring-yellow-500/30">
-                        <AvatarImage src={topThree[2].avatar} alt={topThree[2].name} />
-                        <AvatarFallback>{topThree[2].name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                      </Avatar>
-                      <div className="absolute -top-2 -right-2 h-8 w-8 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                        3
+                {/* 3rd Place */}
+                <div className="md:order-3 md:mt-12">
+                  <Card className={`glass-card border-0 text-center ${getTierColor(topThree[2].tier)}`}>
+                    <CardContent className="p-6">
+                      <div className="relative mb-4">
+                        <Avatar className="h-18 w-18 mx-auto ring-4 ring-yellow-500/30">
+                          <AvatarImage src={topThree[2].avatar} alt={topThree[2].name} />
+                          <AvatarFallback>{topThree[2].name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -top-2 -right-2 h-8 w-8 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                          3
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <h3 className="font-semibold">{topThree[2].name}</h3>
-                      {topThree[2].isVerified && <CheckCircle className="h-4 w-4 text-crypto-blue" />}
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-3">{topThree[2].handle}</p>
-                    <div className="text-2xl font-bold text-yellow-500 mb-2">{topThree[2].score}</div>
-                    <Badge variant="secondary" className="mb-4">{topThree[2].specialization}</Badge>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div>
-                        <div className="text-primary font-medium">{topThree[2].followers}</div>
-                        <div className="text-muted-foreground">Followers</div>
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <h3 className="font-semibold">{topThree[2].name}</h3>
+                        {topThree[2].isVerified && <CheckCircle className="h-4 w-4 text-crypto-blue" />}
                       </div>
-                      <div>
-                        <div className="text-secondary font-medium">{topThree[2].engagement}</div>
-                        <div className="text-muted-foreground">Engagement</div>
+                      <p className="text-sm text-muted-foreground mb-3">{topThree[2].handle}</p>
+                      <div className="text-2xl font-bold text-yellow-500 mb-2">{topThree[2].score}</div>
+                      <Badge variant="secondary" className="mb-4">{topThree[2].specialization}</Badge>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <div className="text-primary font-medium">{topThree[2].followers}</div>
+                          <div className="text-muted-foreground">Followers</div>
+                        </div>
+                        <div>
+                          <div className="text-secondary font-medium">{topThree[2].engagement}</div>
+                          <div className="text-muted-foreground">Engagement</div>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Rest of Leaderboard */}
             <div className="max-w-4xl mx-auto">
               <h2 className="text-2xl font-bold mb-6 text-center">Top Performers</h2>
               <div className="space-y-3">
-                {restOfList.map((kol) => (
+                {(topThree.length >= 3 ? restOfList : leaderboardData).map((kol) => (
                   <Card key={kol.id} className={`glass-card border-0 card-hover ${getTierColor(kol.tier)}`}>
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
@@ -383,7 +313,7 @@ export default function Leaderboard() {
                           </div>
                           <div className="text-center">
                             <div className={`font-medium ${kol.change > 0 ? 'text-secondary' : 'text-destructive'}`}>
-                              {kol.change > 0 ? '+' : ''}{kol.change}%
+                              {kol.change > 0 ? '+' : ''}{kol.change.toFixed(1)}%
                             </div>
                             <div className="text-xs text-muted-foreground">Change</div>
                           </div>
