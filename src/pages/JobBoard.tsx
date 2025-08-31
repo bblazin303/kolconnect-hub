@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -147,6 +148,7 @@ const jobData: Job[] = [
 
 export default function JobBoard() {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [filters, setFilters] = useState({
@@ -327,7 +329,13 @@ export default function JobBoard() {
           </div>
           
           <Button 
-            onClick={() => navigate('/jobs/post')}
+            onClick={() => {
+              if (!isAuthenticated || user?.profile?.user_type !== 'project') {
+                navigate('/auth');
+              } else {
+                navigate('/jobs/post');
+              }
+            }}
             className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 px-6 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
           >
             <Plus className="h-4 w-4" />

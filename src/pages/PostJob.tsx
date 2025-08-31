@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,29 +6,170 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Briefcase } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ArrowLeft, Briefcase, Loader2, AlertCircle } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function PostJob() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, loading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [projectProfile, setProjectProfile] = useState<any>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to post a job.",
+        variant: "destructive"
+      });
+      navigate('/auth');
+      return;
+    }
+
+    if (user) {
+      checkUserAccess();
+    }
+  }, [user, loading, navigate, toast]);
+
+  const checkUserAccess = async () => {
+    try {
+      // First check if user is a project type
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('user_type')
+        .eq('id', user!.id)
+        .single();
+
+      if (userError) {
+        console.error('Error fetching user:', userError);
+        toast({
+          title: "Error",
+          description: "Failed to verify user permissions.",
+          variant: "destructive"
+        });
+        navigate('/');
+        return;
+      }
+
+      if (userData?.user_type !== 'project') {
+        toast({
+          title: "Access denied",
+          description: "Only project accounts can post jobs.",
+          variant: "destructive"
+        });
+        navigate('/');
+        return;
+      }
+
+      // Fetch project profile
+      const { data: profile, error: profileError } = await supabase
+        .from('project_profiles')
+        .select('*')
+        .eq('user_id', user!.id)
+        .single();
+
+      if (profileError) {
+        console.error('Error fetching project profile:', profileError);
+        toast({
+          title: "Error",
+          description: "Failed to load company profile.",
+          variant: "destructive"
+        });
+      } else {
+        setProjectProfile(profile);
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    const formData = new FormData(e.currentTarget);
+    
+    try {
+      const { error } = await supabase.from('campaigns').insert({
+        title: formData.get('title') as string,
+        description: formData.get('description') as string,
+        budget_min: parseInt(formData.get('budget-min') as string),
+        budget_max: parseInt(formData.get('budget-max') as string),
+        requirements: (formData.get('requirements') as string).split('\n').filter(req => req.trim()),
+        application_deadline: formData.get('deadline') as string,
+        project_id: user!.id,
+        status: 'active'
+      });
+
+      if (error) {
+        toast({
+          title: "Error posting job",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+
       toast({
         title: "Job Posted Successfully!",
         description: "Your job has been posted to the job board.",
       });
-      setIsSubmitting(false);
       navigate('/jobs');
-    }, 1500);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to post job. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (loading || profileLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect to auth
+  }
+
+  if (!projectProfile) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <Card className="max-w-2xl mx-auto">
+            <CardContent className="p-8 text-center">
+              <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+              <h2 className="text-xl font-semibold mb-2">Profile Not Found</h2>
+              <p className="text-muted-foreground mb-4">
+                We couldn't find your project profile. Please contact support.
+              </p>
+              <Button onClick={() => navigate('/')}>
+                Go Back Home
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -79,9 +220,13 @@ export default function PostJob() {
                     <Label htmlFor="company">Company</Label>
                     <Input
                       id="company"
-                      placeholder="Your company name"
-                      required
+                      value={projectProfile.company_name}
+                      disabled
+                      className="bg-muted"
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Company name is automatically filled from your account
+                    </p>
                   </div>
                 </div>
 

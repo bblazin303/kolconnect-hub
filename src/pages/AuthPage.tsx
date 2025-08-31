@@ -1,322 +1,302 @@
-import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { Header } from "@/components/layout/Header";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from '@/hooks/useAuth';
-import { toast } from "sonner";
-import { 
-  Twitter, 
-  Shield, 
-  CheckCircle, 
-  Users, 
-  TrendingUp, 
-  DollarSign,
-  ArrowRight,
-  Wallet,
-  Link as LinkIcon
-} from "lucide-react";
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, User, Building2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
+import { Header } from '@/components/layout/Header';
 
 export default function AuthPage() {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(searchParams.get('type') || 'kol');
-  const { isAuthenticated, user, signInWithTwitter, loading } = useAuth();
+  const [searchParams] = useSearchParams();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('signin');
 
   useEffect(() => {
-    const type = searchParams.get('type');
-    if (type && (type === 'kol' || type === 'project')) {
-      setActiveTab(type);
-    }
-  }, [searchParams]);
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated && user?.profile && !loading) {
-      const dashboardPath = user.profile.user_type === 'kol' ? '/dashboard/kol' : '/dashboard/project';
-      console.log('🔄 AuthPage: User already authenticated, redirecting to:', dashboardPath)
-      navigate(dashboardPath, { replace: true });
-    }
-  }, [isAuthenticated, user?.profile, loading, navigate]);
-
-  const handleAuth = async (method: 'twitter' | 'wallet') => {
-    console.log('🔥 handleAuth called with method:', method, 'activeTab:', activeTab);
-    
-    if (method === 'twitter') {
-      try {
-        console.log('🚀 Starting Twitter authentication for:', activeTab);
-        console.log('🌍 Current window location:', window.location.href);
-        console.log('🌐 Current origin:', window.location.origin);
-        
-        const { error } = await signInWithTwitter(activeTab as 'kol' | 'project');
-        
-        if (error) {
-          console.error('❌ Authentication error full object:', error);
-          console.error('❌ Error message:', error.message);
-          console.error('❌ Error status:', error.status);
-          toast.error(`Failed to sign in with Twitter: ${error.message || 'Please check Supabase configuration.'}`);
-        } else {
-          console.log('✅ Twitter sign in initiated successfully!');
-        }
-      } catch (error) {
-        console.error('❌ Unexpected sign in error:', error);
-        toast.error('An unexpected error occurred. Please try again.');
+    // Check if user is already authenticated
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate('/');
       }
-    } else {
-      toast.info('Wallet authentication coming soon!');
+    };
+    checkAuth();
+  }, [navigate]);
+
+  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          setError('Invalid email or password. Please check your credentials.');
+        } else {
+          setError(error.message);
+        }
+        return;
+      }
+
+      toast({
+        title: "Welcome back!",
+        description: "You have been successfully signed in.",
+      });
+
+      navigate('/');
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const KOLSignup = () => (
-    <div className="space-y-6">
-      <div className="text-center space-y-4">
-        <h2 className="text-2xl font-bold">Join as a <span className="text-gradient-emerald">KOL</span></h2>
-        <p className="text-muted-foreground">
-          Connect with top crypto projects and monetize your influence
-        </p>
-      </div>
+  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
 
-      {/* Benefits */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="glass-card p-4">
-          <TrendingUp className="h-6 w-6 text-secondary mb-2" />
-          <h3 className="font-semibold mb-1">High-Paying Campaigns</h3>
-          <p className="text-sm text-muted-foreground">Access premium campaigns with rates up to $500/hour</p>
-        </div>
-        <div className="glass-card p-4">
-          <Shield className="h-6 w-6 text-crypto-blue mb-2" />
-          <h3 className="font-semibold mb-1">Secure Payments</h3>
-          <p className="text-sm text-muted-foreground">Guaranteed payments through smart contract escrow</p>
-        </div>
-        <div className="glass-card p-4">
-          <Users className="h-6 w-6 text-primary mb-2" />
-          <h3 className="font-semibold mb-1">Quality Projects</h3>
-          <p className="text-sm text-muted-foreground">Work with verified projects and legitimate teams</p>
-        </div>
-        <div className="glass-card p-4">
-          <CheckCircle className="h-6 w-6 text-secondary mb-2" />
-          <h3 className="font-semibold mb-1">Verified Profile</h3>
-          <p className="text-sm text-muted-foreground">Build trust with official verification badges</p>
-        </div>
-      </div>
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const confirmPassword = formData.get('confirmPassword') as string;
+    const userType = formData.get('userType') as string;
+    const name = formData.get('name') as string;
 
-      {/* Auth Options */}
-      <div className="space-y-4">
-        <Button 
-          className="w-full btn-secondary h-12 text-base"
-          onClick={() => handleAuth('twitter')}
-        >
-          <Twitter className="h-5 w-5 mr-3" />
-          Continue with Twitter
-          <ArrowRight className="h-4 w-4 ml-auto" />
-        </Button>
-        
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border/50" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or</span>
-          </div>
-        </div>
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      setIsLoading(false);
+      return;
+    }
 
-        <Button 
-          variant="outline" 
-          className="w-full glass-card h-12 text-base"
-          onClick={() => handleAuth('wallet')}
-        >
-          <Wallet className="h-5 w-5 mr-3" />
-          Connect Wallet
-          <ArrowRight className="h-4 w-4 ml-auto" />
-        </Button>
-      </div>
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      setIsLoading(false);
+      return;
+    }
 
-      {/* Requirements */}
-      <div className="glass-card p-4">
-        <h3 className="font-semibold mb-3 flex items-center gap-2">
-          <CheckCircle className="h-4 w-4 text-secondary" />
-          Requirements to Join
-        </h3>
-        <ul className="text-sm text-muted-foreground space-y-2">
-          <li className="flex items-center gap-2">
-            <div className="w-1 h-1 rounded-full bg-primary" />
-            Active Twitter account with 1K+ crypto-focused followers
-          </li>
-          <li className="flex items-center gap-2">
-            <div className="w-1 h-1 rounded-full bg-primary" />
-            Genuine engagement and community interaction
-          </li>
-          <li className="flex items-center gap-2">
-            <div className="w-1 h-1 rounded-full bg-primary" />
-            Professional conduct and reliable communication
-          </li>
-        </ul>
-      </div>
-    </div>
-  );
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            user_type: userType,
+            name: name,
+          }
+        }
+      });
 
-  const ProjectSignup = () => (
-    <div className="space-y-6">
-      <div className="text-center space-y-4">
-        <h2 className="text-2xl font-bold">Post as a <span className="text-gradient-gold">Project</span></h2>
-        <p className="text-muted-foreground">
-          Find verified crypto influencers to amplify your project
-        </p>
-      </div>
+      if (error) {
+        if (error.message.includes('User already registered')) {
+          setError('An account with this email already exists. Please sign in instead.');
+        } else {
+          setError(error.message);
+        }
+        return;
+      }
 
-      {/* Benefits */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="glass-card p-4">
-          <Users className="h-6 w-6 text-primary mb-2" />
-          <h3 className="font-semibold mb-1">Verified KOLs</h3>
-          <p className="text-sm text-muted-foreground">Access to 5,000+ verified crypto influencers</p>
-        </div>
-        <div className="glass-card p-4">
-          <TrendingUp className="h-6 w-6 text-secondary mb-2" />
-          <h3 className="font-semibold mb-1">Performance Tracking</h3>
-          <p className="text-sm text-muted-foreground">Real-time analytics and ROI measurement</p>
-        </div>
-        <div className="glass-card p-4">
-          <Shield className="h-6 w-6 text-crypto-blue mb-2" />
-          <h3 className="font-semibold mb-1">Secure Escrow</h3>
-          <p className="text-sm text-muted-foreground">Milestone-based payments with dispute protection</p>
-        </div>
-        <div className="glass-card p-4">
-          <DollarSign className="h-6 w-6 text-primary mb-2" />
-          <h3 className="font-semibold mb-1">Transparent Pricing</h3>
-          <p className="text-sm text-muted-foreground">Clear rates and no hidden fees</p>
-        </div>
-      </div>
+      toast({
+        title: "Account created successfully!",
+        description: "Please check your email to verify your account.",
+      });
 
-      {/* Auth Options */}
-      <div className="space-y-4">
-        <Button 
-          className="w-full btn-hero h-12 text-base"
-          onClick={() => handleAuth('twitter')}
-        >
-          <Twitter className="h-5 w-5 mr-3" />
-          Continue with Twitter
-          <ArrowRight className="h-4 w-4 ml-auto" />
-        </Button>
-        
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border/50" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or</span>
-          </div>
-        </div>
-
-        <Button 
-          variant="outline" 
-          className="w-full glass-card h-12 text-base"
-          onClick={() => handleAuth('wallet')}
-        >
-          <Wallet className="h-5 w-5 mr-3" />
-          Connect Wallet
-          <ArrowRight className="h-4 w-4 ml-auto" />
-        </Button>
-      </div>
-
-      {/* Enterprise Option */}
-      <div className="glass-card p-4 border-primary/30 bg-primary/5">
-        <div className="flex items-start gap-3">
-          <LinkIcon className="h-5 w-5 text-primary mt-0.5" />
-          <div>
-            <h3 className="font-semibold text-primary mb-1">Enterprise Solutions</h3>
-            <p className="text-sm text-muted-foreground mb-3">
-              Need managed campaigns or bulk KOL partnerships? Our enterprise team can help.
-            </p>
-            <Button variant="outline" size="sm" className="border-primary/30 text-primary">
-              Contact Sales
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+      setActiveTab('signin');
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="container mx-auto px-4 py-8">
         <div className="max-w-md mx-auto">
-          <Card className="glass-card border-0">
-            <CardHeader className="text-center pb-2">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                  <span className="text-black font-bold text-sm">KH</span>
-                </div>
-                <span className="text-xl font-mono font-bold text-gradient-gold">KOLHub</span>
-              </div>
-              <CardTitle className="text-2xl">Join the Premier Crypto KOL Marketplace</CardTitle>
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl">Welcome</CardTitle>
+              <CardDescription>
+                Sign in to your account or create a new one
+              </CardDescription>
             </CardHeader>
 
             <CardContent>
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6 glass-card">
-                  <TabsTrigger value="kol" className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    KOL
-                  </TabsTrigger>
-                  <TabsTrigger value="project" className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4" />
-                    Project
-                  </TabsTrigger>
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="signin">Sign In</TabsTrigger>
+                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="kol">
-                  <KOLSignup />
+                <TabsContent value="signin">
+                  <form onSubmit={handleSignIn} className="space-y-4">
+                    {error && (
+                      <Alert variant="destructive">
+                        <AlertDescription>{error}</AlertDescription>
+                      </Alert>
+                    )}
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signin-email">Email</Label>
+                      <Input
+                        id="signin-email"
+                        name="email"
+                        type="email"
+                        placeholder="your@email.com"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signin-password">Password</Label>
+                      <Input
+                        id="signin-password"
+                        name="password"
+                        type="password"
+                        placeholder="Enter your password"
+                        required
+                      />
+                    </div>
+
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-primary hover:bg-primary/90"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Signing in...
+                        </>
+                      ) : (
+                        'Sign In'
+                      )}
+                    </Button>
+                  </form>
                 </TabsContent>
 
-                <TabsContent value="project">
-                  <ProjectSignup />
+                <TabsContent value="signup">
+                  <form onSubmit={handleSignUp} className="space-y-4">
+                    {error && (
+                      <Alert variant="destructive">
+                        <AlertDescription>{error}</AlertDescription>
+                      </Alert>
+                    )}
+
+                    <div className="space-y-2">
+                      <Label htmlFor="userType">I am a...</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <label className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer">
+                          <input 
+                            type="radio" 
+                            name="userType" 
+                            value="kol" 
+                            required 
+                            className="text-primary"
+                          />
+                          <User className="h-4 w-4" />
+                          <span className="text-sm">KOL/Influencer</span>
+                        </label>
+                        <label className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer">
+                          <input 
+                            type="radio" 
+                            name="userType" 
+                            value="project" 
+                            required 
+                            className="text-primary"
+                          />
+                          <Building2 className="h-4 w-4" />
+                          <span className="text-sm">Project/Company</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-name">Name</Label>
+                      <Input
+                        id="signup-name"
+                        name="name"
+                        type="text"
+                        placeholder="Your name or company name"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email</Label>
+                      <Input
+                        id="signup-email"
+                        name="email"
+                        type="email"
+                        placeholder="your@email.com"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password">Password</Label>
+                      <Input
+                        id="signup-password"
+                        name="password"
+                        type="password"
+                        placeholder="Choose a password (min. 6 characters)"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-confirm">Confirm Password</Label>
+                      <Input
+                        id="signup-confirm"
+                        name="confirmPassword"
+                        type="password"
+                        placeholder="Confirm your password"
+                        required
+                      />
+                    </div>
+
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-primary hover:bg-primary/90"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Creating account...
+                        </>
+                      ) : (
+                        'Create Account'
+                      )}
+                    </Button>
+                  </form>
                 </TabsContent>
               </Tabs>
-
-              {/* Trust Indicators */}
-              <div className="mt-8 pt-6 border-t border-border/50">
-                <div className="flex flex-wrap justify-center items-center gap-4 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Shield className="h-3 w-3 text-crypto-blue" />
-                    <span>Secure Platform</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <CheckCircle className="h-3 w-3 text-secondary" />
-                    <span>Verified Users</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Users className="h-3 w-3 text-primary" />
-                    <span>10K+ Members</span>
-                  </div>
-                </div>
-              </div>
             </CardContent>
           </Card>
-
-          {/* Additional Info */}
-          <div className="mt-6 text-center">
-            <p className="text-xs text-muted-foreground mb-2">
-              By signing up, you agree to our{" "}
-              <a href="/terms" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                Terms of Service
-              </a>{" "}
-              and{" "}
-              <a href="/privacy" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                Privacy Policy
-              </a>
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Already have an account?{" "}
-              <button className="text-primary hover:underline">Sign in</button>
-            </p>
-          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

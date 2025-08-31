@@ -29,17 +29,17 @@ interface HeaderProps {
   isAuthenticated?: boolean;
 }
 
-export function Header({ userType = null, isAuthenticated = false }: HeaderProps) {
+export function Header({ userType = null, isAuthenticated: propIsAuthenticated = false }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const { user, isAuthenticated: authStatus, signOut } = useAuth();
+  const { user, isAuthenticated, signOut } = useAuth();
 
   // Use actual auth status and user data
-  const actuallyAuthenticated = authStatus && user?.profile;
+  const actuallyAuthenticated = isAuthenticated && user?.profile;
   const actualUserType = user?.profile?.user_type;
 
   const handleAuthClick = (type: 'kol' | 'project') => {
-    navigate(`/auth?type=${type}`);
+    navigate('/auth');
   };
 
   const handleDashboardClick = () => {
