@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import KOLDirectory from "./pages/KOLDirectory";
@@ -22,8 +23,9 @@ const queryClient = new QueryClient();
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider delayDuration={0}>
-        <BrowserRouter>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+        <TooltipProvider delayDuration={0}>
+          <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/kols" element={<KOLDirectory />} />
@@ -43,6 +45,7 @@ const App = () => {
           <Sonner />
         </BrowserRouter>
       </TooltipProvider>
+    </ThemeProvider>
     </QueryClientProvider>
   );
 };
