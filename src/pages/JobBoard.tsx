@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -145,6 +146,7 @@ const jobData: Job[] = [
 ];
 
 export default function JobBoard() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [filters, setFilters] = useState({
@@ -324,8 +326,11 @@ export default function JobBoard() {
             </p>
           </div>
           
-          <Button className="btn-hero">
-            <Plus className="h-4 w-4 mr-2" />
+          <Button 
+            onClick={() => navigate('/jobs/post')}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 px-6 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+          >
+            <Plus className="h-4 w-4" />
             Post a Job
           </Button>
         </div>

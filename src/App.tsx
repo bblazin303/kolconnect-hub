@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import KOLProfile from "./pages/KOLProfile";
 import JobBoard from "./pages/JobBoard";
+import PostJob from "./pages/PostJob";
 import Leaderboard from "./pages/Leaderboard";
 import AuthPage from "./pages/AuthPage";
 import AuthCallback from "./pages/AuthCallback";
@@ -36,6 +37,7 @@ const App = () => {
               <Route path="/kols" element={<KOLDirectoryRealUsers />} />
               <Route path="/kols/:kolId" element={<KOLProfile />} />
               <Route path="/jobs" element={<JobBoard />} />
+              <Route path="/jobs/post" element={<PostJob />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
