@@ -1,6 +1,8 @@
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/hooks/useAuth'
+import { useNotifications } from '@/hooks/useNotifications'
 import { Link, useLocation } from 'react-router-dom'
 import { 
   LayoutDashboard, 
@@ -35,8 +37,18 @@ const projectNavItems = [
 
 export function DashboardSidebar() {
   const { user, isKOL, signOut } = useAuth()
+  const { unreadCount } = useNotifications()
   const location = useLocation()
   const navItems = isKOL ? kolNavItems : projectNavItems
+
+  // Helper function to get notification count for specific menu items
+  const getNotificationCount = (itemName: string) => {
+    if (itemName === 'Messages') {
+      return unreadCount
+    }
+    // Add more notification types here as needed
+    return 0
+  }
 
   return (
     <div className="fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform duration-200 ease-in-out lg:translate-x-0">
@@ -83,20 +95,29 @@ export function DashboardSidebar() {
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = location.pathname === item.href
+            const notificationCount = getNotificationCount(item.name)
             
             return (
               <Link
                 key={item.name}
                 to={item.href}
                 className={cn(
-                  'flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                  'flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors relative',
                   isActive 
                     ? 'bg-primary text-primary-foreground' 
                     : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                 )}
               >
                 <Icon className="h-4 w-4" />
-                <span>{item.name}</span>
+                <span className="flex-1">{item.name}</span>
+                {notificationCount > 0 && (
+                  <Badge 
+                    variant={isActive ? "secondary" : "destructive"} 
+                    className="ml-auto h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                  >
+                    {notificationCount > 9 ? '9+' : notificationCount}
+                  </Badge>
+                )}
               </Link>
             )
           })}
