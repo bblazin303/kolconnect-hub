@@ -58,8 +58,8 @@ export function useAuth() {
       console.log('👤 User profile result:', { profile, profileError })
 
       // If profile exists and has Twitter username, fetch enhanced metrics
-      if (profile?.twitter_username && !profile.twitter_public_metrics) {
-        console.log('📊 Fetching enhanced Twitter metrics...')
+      if (profile?.twitter_username && (!profile.twitter_public_metrics || profile.twitter_followers_count === 0)) {
+        console.log('📊 Fetching enhanced Twitter metrics for:', profile.twitter_username)
         try {
           const { data: metricsResult } = await supabase.functions.invoke('fetch-twitter-metrics', {
             body: { 
@@ -68,6 +68,21 @@ export function useAuth() {
             }
           })
           console.log('📈 Twitter metrics result:', metricsResult)
+          
+          // Reload profile after metrics update
+          setTimeout(async () => {
+            const { data: updatedProfile } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', authUser.id)
+              .single()
+            
+            if (updatedProfile) {
+              console.log('🔄 Updated profile with metrics:', updatedProfile)
+              // Trigger a re-render by updating the user state
+              window.location.reload()
+            }
+          }, 2000)
         } catch (metricsError) {
           console.log('⚠️ Twitter metrics fetch failed (non-critical):', metricsError)
         }
