@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { toast } from '@/hooks/use-toast'
+import { supabase } from '@/integrations/supabase/client'
 
 export default function AuthCallback() {
   const navigate = useNavigate()
@@ -49,10 +50,23 @@ export default function AuthCallback() {
         if (storedUserType && user.profile.user_type !== storedUserType) {
           console.log('🔄 Updating user type from', user.profile.user_type, 'to', storedUserType)
           // Update the user profile with correct type
-          // This will be handled by the useAuth hook's updateProfile method
+          try {
+            const { error: updateError } = await supabase
+              .from('users')
+              .update({ user_type: storedUserType, updated_at: new Date().toISOString() })
+              .eq('id', user.id)
+            
+            if (updateError) {
+              console.error('❌ Failed to update user type:', updateError)
+            } else {
+              console.log('✅ User type updated successfully')
+            }
+          } catch (error) {
+            console.error('❌ Error updating user type:', error)
+          }
         }
         
-        const userType = user.profile.user_type
+        const userType = storedUserType || user.profile.user_type
         console.log('🎯 Redirecting to dashboard:', userType)
         localStorage.removeItem('oauth_user_type') // Clean up
         navigate(`/dashboard/${userType}`, { replace: true })
