@@ -116,7 +116,7 @@ export function Header({ userType = null, isAuthenticated = false }: HeaderProps
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-6">
                 {/* Dashboard Button */}
                 <Button 
                   variant="outline" 
@@ -133,7 +133,9 @@ export function Header({ userType = null, isAuthenticated = false }: HeaderProps
                 </Button>
 
                 {/* Notifications */}
-                <NotificationButton />
+                <div className="relative">
+                  <NotificationButton />
+                </div>
 
                 {/* User Menu */}
                 <DropdownMenu>
