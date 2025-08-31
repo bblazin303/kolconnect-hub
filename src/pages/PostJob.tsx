@@ -37,7 +37,7 @@ export default function PostJob() {
     }
   }, [user, loading, navigate, toast]);
 
-  const checkUserAccess = async () => {
+    const checkUserAccess = async () => {
     try {
       // First check if user is a project type
       const { data: userData, error: userError } = await supabase
