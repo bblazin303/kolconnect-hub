@@ -23,7 +23,7 @@ export default function AuthPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(searchParams.get('type') || 'kol');
-  const { isAuthenticated, user, signInWithTwitter } = useAuth();
+  const { isAuthenticated, user, signInWithTwitter, loading } = useAuth();
 
   useEffect(() => {
     const type = searchParams.get('type');
@@ -34,11 +34,12 @@ export default function AuthPage() {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated && user?.profile) {
+    if (isAuthenticated && user?.profile && !loading) {
       const dashboardPath = user.profile.user_type === 'kol' ? '/dashboard/kol' : '/dashboard/project';
-      navigate(dashboardPath);
+      console.log('🔄 AuthPage: User already authenticated, redirecting to:', dashboardPath)
+      navigate(dashboardPath, { replace: true });
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, user?.profile, loading, navigate]);
 
   const handleAuth = async (method: 'twitter' | 'wallet') => {
     console.log('🔥 handleAuth called with method:', method, 'activeTab:', activeTab);

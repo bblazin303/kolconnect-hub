@@ -10,6 +10,8 @@ export default function AuthCallback() {
   const { user, loading } = useAuth()
 
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout
+
     const handleCallback = async () => {
       console.log('🔄 AuthCallback: Processing callback...')
       console.log('🔍 Current URL:', window.location.href)
@@ -49,63 +51,50 @@ export default function AuthCallback() {
         console.log('🔍 Profile user_type:', user.profile.user_type)
         console.log('🔍 Stored user_type:', storedUserType)
         
-        // Check if we need to update user type based on stored preference
-        if (storedUserType && user.profile.user_type !== storedUserType) {
-          console.log('🔄 Updating user type from', user.profile.user_type, 'to', storedUserType)
-          // Update the user profile with correct type
-          try {
-            const { error: updateError } = await supabase
-              .from('users')
-              .update({ user_type: storedUserType, updated_at: new Date().toISOString() })
-              .eq('id', user.id)
-            
-            if (updateError) {
-              console.error('❌ Failed to update user type:', updateError)
-            } else {
-              console.log('✅ User type updated successfully')
-            }
-          } catch (error) {
-            console.error('❌ Error updating user type:', error)
-          }
-        }
-        
         const userType = storedUserType || user.profile.user_type
         console.log('🎯 Final userType for redirect:', userType)
         console.log('🎯 Redirecting to dashboard URL:', `/dashboard/${userType}`)
         
-        // Small delay to ensure state is updated
-        setTimeout(() => {
-          localStorage.removeItem('oauth_user_type') // Clean up
-          navigate(`/dashboard/${userType}`, { replace: true })
-        }, 100)
-      } else if (user && !user.profile) {
+        localStorage.removeItem('oauth_user_type') // Clean up
+        navigate(`/dashboard/${userType}`, { replace: true })
+        return
+      } 
+      
+      if (user && !user.profile) {
         console.log('⚠️ User exists but no profile found:', user)
         console.log('⚠️ User ID:', user.id)
         console.log('⚠️ User email:', user.email)
         // Wait a bit longer for profile to load or be created by trigger
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
           if (!user?.profile) {
             console.log('❌ Profile still not loaded after timeout, redirecting to auth')
             localStorage.removeItem('oauth_user_type') // Clean up
             navigate('/auth')
           }
         }, 3000)
-      } else {
+        return
+      } 
+      
+      if (!user) {
         console.log('❌ No user found after callback')
         console.log('❌ Current user state:', user)
         console.log('❌ Loading state:', loading)
         // If no user after a short delay, redirect to auth
-        setTimeout(() => {
-          if (!user) {
-            console.log('❌ Still no user after timeout, redirecting to auth')
-            localStorage.removeItem('oauth_user_type') // Clean up
-            navigate('/auth')
-          }
+        timeoutId = setTimeout(() => {
+          console.log('❌ Still no user after timeout, redirecting to auth')
+          localStorage.removeItem('oauth_user_type') // Clean up
+          navigate('/auth')
         }, 2000)
       }
     }
 
     handleCallback()
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
+    }
   }, [user, loading, navigate, searchParams, toast])
 
   return (

@@ -16,7 +16,7 @@ interface KOLStats {
 }
 
 export default function KOLDashboard() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [stats, setStats] = useState<KOLStats>({
     total_earnings: 0,
     total_campaigns: 0,
@@ -25,12 +25,15 @@ export default function KOLDashboard() {
   })
   const [recentCampaigns, setRecentCampaigns] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [hasLoadedData, setHasLoadedData] = useState(false)
 
   useEffect(() => {
-    if (user?.id) {
+    // Only load data once when user is available and we haven't loaded yet
+    if (user?.id && !authLoading && !hasLoadedData) {
       loadDashboardData()
+      setHasLoadedData(true)
     }
-  }, [user?.id])
+  }, [user?.id, authLoading, hasLoadedData])
 
   const loadDashboardData = async () => {
     try {

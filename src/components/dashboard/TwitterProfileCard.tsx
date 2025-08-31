@@ -26,6 +26,7 @@ export function TwitterProfileCard() {
   const { user } = useAuth()
   const [posts, setPosts] = useState<TwitterPost[]>([])
   const [loading, setLoading] = useState(true)
+  const [hasFetchedPosts, setHasFetchedPosts] = useState(false)
 
   useEffect(() => {
     console.log('🔍 TwitterProfileCard user data:', user?.profile)
@@ -33,13 +34,15 @@ export function TwitterProfileCard() {
     console.log('🔍 Twitter followers:', user?.profile?.twitter_followers_count)
     console.log('🔍 Twitter following:', user?.profile?.twitter_following_count)
     console.log('🔍 Twitter tweets:', user?.profile?.twitter_tweet_count)
-    
-    if (user?.profile?.twitter_username) {
+
+    // Only fetch posts once when component mounts and user has twitter username
+    if (user?.profile?.twitter_username && !hasFetchedPosts) {
       fetchTwitterPosts()
-    } else {
+      setHasFetchedPosts(true)
+    } else if (!user?.profile?.twitter_username) {
       setLoading(false)
     }
-  }, [user?.profile?.twitter_username])
+  }, [user?.profile?.twitter_username, hasFetchedPosts])
 
   const fetchTwitterPosts = async () => {
     try {

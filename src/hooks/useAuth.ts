@@ -19,8 +19,11 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let mounted = true
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return
       setSession(session)
       if (session?.user) {
         loadUserProfile(session.user)
@@ -30,25 +33,36 @@ export function useAuth() {
     })
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session)
-      if (session?.user) {
-        loadUserProfile(session.user)
-      } else {
-        setUser(null)
-        setLoading(false)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return
+        console.log('🔄 Auth state change:', event, session?.user?.id)
+        setSession(session)
+        
+        if (session?.user) {
+          // Only load profile if we don't already have it or if user changed
+          if (!user || user.id !== session.user.id) {
+            loadUserProfile(session.user)
+          }
+        } else {
+          setUser(null)
+          setLoading(false)
+        }
       }
-    })
+    )
 
-    return () => subscription.unsubscribe()
-  }, [])
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, []) // Remove user dependency to prevent loops
 
   const loadUserProfile = async (authUser: User) => {
     try {
-      console.log('🔄 Loading user profile for:', authUser.id)
-      console.log('🔄 User metadata:', authUser.user_metadata)
-      
-      // Get user profile
+      setLoading(true)
+      console.log('👤 Loading profile for user:', authUser.id)
+
+      // Fetch the user's profile from the users table
       const { data: profile, error: profileError } = await supabase
         .from('users')
         .select('*')
@@ -57,88 +71,76 @@ export function useAuth() {
 
       console.log('👤 User profile result:', { profile, profileError })
 
-      // If profile exists and has Twitter username, fetch enhanced metrics
-      if (profile?.twitter_username && (!profile.twitter_public_metrics || profile.twitter_followers_count === 0)) {
-        console.log('📊 Fetching enhanced Twitter metrics for:', profile.twitter_username)
-        try {
-          const { data: metricsResult } = await supabase.functions.invoke('fetch-twitter-metrics', {
-            body: { 
-              userId: authUser.id, 
-              twitterUsername: profile.twitter_username 
-            }
-          })
-          console.log('📈 Twitter metrics result:', metricsResult)
-          
-          // Reload profile after metrics update
-          setTimeout(async () => {
-            const { data: updatedProfile } = await supabase
-              .from('users')
-              .select('*')
-              .eq('id', authUser.id)
-              .single()
-            
-            if (updatedProfile) {
-              console.log('🔄 Updated profile with metrics:', updatedProfile)
-              // Trigger a re-render by updating the user state
-              window.location.reload()
-            }
-          }, 2000)
-        } catch (metricsError) {
-          console.log('⚠️ Twitter metrics fetch failed (non-critical):', metricsError)
-        }
-      }
-
-      let kolProfile = null
-      let projectProfile = null
-
       if (profile) {
-        console.log('✅ Profile found, user_type:', profile.user_type)
+        // Fetch KOL or Project profile based on user type
+        let additionalProfile = null
         
         if (profile.user_type === 'kol') {
-          const { data, error: kolError } = await supabase
+          const { data: kolProfile } = await supabase
             .from('kol_profiles')
             .select('*')
             .eq('user_id', authUser.id)
             .single()
-          console.log('🎯 KOL profile result:', { data, kolError })
-          kolProfile = data
+          additionalProfile = kolProfile
         } else if (profile.user_type === 'project') {
-          const { data, error: projectError } = await supabase
+          const { data: projectProfile } = await supabase
             .from('project_profiles')
             .select('*')
             .eq('user_id', authUser.id)
             .single()
-          console.log('🏢 Project profile result:', { data, projectError })
-          projectProfile = data
+          additionalProfile = projectProfile
         }
-      } else {
-        console.log('❌ No profile found for user:', authUser.id)
-      }
 
-      const userData = {
-        ...authUser,
-        profile,
-        kolProfile,
-        projectProfile
+        // Only fetch Twitter metrics if we don't have them and have username
+        const shouldFetchMetrics = profile.twitter_username && 
+          (!profile.twitter_public_metrics || profile.twitter_followers_count === 0)
+
+        if (shouldFetchMetrics) {
+          console.log('📊 Fetching enhanced Twitter metrics...')
+          // Don't await this - let it run in background
+          supabase.functions.invoke('fetch-twitter-metrics', {
+            body: { 
+              userId: authUser.id, 
+              twitterUsername: profile.twitter_username 
+            }
+          }).then(({ data: metricsResult }) => {
+            console.log('📈 Twitter metrics result:', metricsResult)
+          }).catch(metricsError => {
+            console.log('⚠️ Twitter metrics fetch failed (non-critical):', metricsError)
+          })
+        }
+
+        // Set user with profile data
+        const enrichedUser: AuthUser = {
+          ...authUser,
+          profile,
+          kolProfile: profile.user_type === 'kol' ? additionalProfile : undefined,
+          projectProfile: profile.user_type === 'project' ? additionalProfile : undefined
+        }
+
+        setUser(enrichedUser)
+      } else {
+        console.log('⚠️ No profile found for user, setting basic user')
+        setUser(authUser)
       }
-      
-      console.log('📋 Final user data:', userData)
-      setUser(userData)
     } catch (error) {
       console.error('❌ Error loading user profile:', error)
+      setUser(authUser) // Set basic user data even if profile fetch fails
     } finally {
       setLoading(false)
     }
   }
 
-  const signInWithTwitter = async (userType: 'kol' | 'project') => {
+  const signInWithTwitter = async (userType: 'kol' | 'project', redirectTo?: string) => {
     try {
-      // Store user type in localStorage so we can retrieve it after OAuth redirect
-      localStorage.setItem('oauth_user_type', userType)
+      console.log('🐦 Starting Twitter OAuth with user type:', userType)
       
-      const redirectUrl = `${window.location.origin}/auth/callback`
-      console.log('🐦 Starting Twitter OAuth with redirect:', redirectUrl)
-      console.log('🐦 User type stored:', userType)
+      // Store user type in localStorage for retrieval after redirect
+      localStorage.setItem('oauth_user_type', userType)
+      console.log('🔍 Stored user type in localStorage:', userType)
+      
+      const redirectUrl = redirectTo || `${window.location.origin}/auth/callback`
+      console.log('🔗 Using redirect URL:', redirectUrl)
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
@@ -149,51 +151,51 @@ export function useAuth() {
           }
         }
       })
-      
-      console.log('🐦 OAuth response:', { data, error })
-      
+
       if (error) {
-        console.error('❌ OAuth error:', error)
+        console.error('❌ Twitter OAuth error:', error)
+        localStorage.removeItem('oauth_user_type') // Clean up on error
         throw error
       }
-      
+
+      console.log('✅ Twitter OAuth initiated successfully:', data)
       return { data, error: null }
     } catch (error) {
-      console.error('❌ Error signing in with Twitter:', error)
+      console.error('❌ Error initiating Twitter OAuth:', error)
+      localStorage.removeItem('oauth_user_type') // Clean up on error
       return { data: null, error }
     }
   }
 
   const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-    } catch (error) {
-      console.error('Error signing out:', error)
+    const { error } = await supabase.auth.signOut()
+    if (!error) {
+      setUser(null)
+      setSession(null)
     }
+    return { error }
   }
-
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
-    if (!user?.id) return
+    if (!user?.id) return { error: new Error('No user logged in') }
 
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('id', user.id)
-        .select()
-        .single()
+    const { data, error } = await supabase
+      .from('users')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', user.id)
+      .select()
+      .single()
 
-      if (error) throw error
-      
-      setUser(prev => prev ? { ...prev, profile: data } : null)
-      return { data, error: null }
-    } catch (error) {
-      console.error('Error updating profile:', error)
-      return { data: null, error }
+    if (!error && data) {
+      setUser(prev => prev ? { ...prev, profile: data } : prev)
     }
+
+    return { data, error }
   }
+
+  const isAuthenticated = !!session && !!user
+  const isKOL = user?.profile?.user_type === 'kol'
+  const isProject = user?.profile?.user_type === 'project'
 
   return {
     user,
@@ -202,8 +204,8 @@ export function useAuth() {
     signInWithTwitter,
     signOut,
     updateProfile,
-    isAuthenticated: !!session,
-    isKOL: user?.profile?.user_type === 'kol',
-    isProject: user?.profile?.user_type === 'project'
+    isAuthenticated,
+    isKOL,
+    isProject
   }
 }
