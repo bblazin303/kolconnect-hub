@@ -115,7 +115,7 @@ export default function KOLDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">${stats.total_earnings.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">+12% from last month</p>
+              <p className="text-xs text-muted-foreground">Total campaign earnings</p>
             </CardContent>
           </Card>
 
@@ -126,7 +126,7 @@ export default function KOLDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.total_campaigns}</div>
-              <p className="text-xs text-muted-foreground">+2 this month</p>
+              <p className="text-xs text-muted-foreground">Campaigns completed</p>
             </CardContent>
           </Card>
 
@@ -137,7 +137,7 @@ export default function KOLDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.rating.toFixed(1)}/5.0</div>
-              <p className="text-xs text-muted-foreground">Excellent performance</p>
+              <p className="text-xs text-muted-foreground">Average rating</p>
             </CardContent>
           </Card>
 
@@ -148,7 +148,7 @@ export default function KOLDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.active_applications}</div>
-              <p className="text-xs text-muted-foreground">Pending review</p>
+              <p className="text-xs text-muted-foreground">Applications submitted</p>
             </CardContent>
           </Card>
           </div>
