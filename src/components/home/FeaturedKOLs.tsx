@@ -164,6 +164,8 @@ export function FeaturedKOLs() {
                            src={kol.twitter_profile_image_url}
                            alt={kol.display_name}
                            className="h-12 w-12 rounded-full object-cover ring-2 ring-primary/20"
+                           referrerPolicy="no-referrer"
+                           crossOrigin="anonymous"
                            onError={(e) => {
                              console.log('Image failed to load:', kol.twitter_profile_image_url);
                              // Replace with fallback div

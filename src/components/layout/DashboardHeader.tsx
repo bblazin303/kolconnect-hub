@@ -29,6 +29,8 @@ export function DashboardHeader() {
                   src={user.profile.avatar_url} 
                   alt="Profile" 
                   className="h-8 w-8 rounded-full object-cover"
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
                   onError={(e) => {
                     console.log('Dashboard avatar failed to load:', user.profile.avatar_url);
                     e.currentTarget.style.display = 'none';
