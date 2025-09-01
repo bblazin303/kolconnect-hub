@@ -148,33 +148,9 @@ export function HowItWorks({ userType = 'project' }: HowItWorksProps) {
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-mono font-bold mb-6">
             Simple Process, <span className="text-gradient-gold">Powerful Results</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Get started in minutes with our streamlined process designed for both projects and KOLs
           </p>
-          
-          {/* Toggle Pills */}
-          <div className="flex justify-center space-x-2">
-            <Badge 
-              variant={userType === 'project' ? 'default' : 'outline'}
-              className={`px-4 py-2 cursor-pointer transition-all ${
-                userType === 'project' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-transparent border-border/50 hover:border-primary/50'
-              }`}
-            >
-              For Projects
-            </Badge>
-            <Badge 
-              variant={userType === 'kol' ? 'default' : 'outline'}
-              className={`px-4 py-2 cursor-pointer transition-all ${
-                userType === 'kol' 
-                  ? 'bg-secondary text-secondary-foreground' 
-                  : 'bg-transparent border-border/50 hover:border-secondary/50'
-              }`}
-            >
-              For KOLs
-            </Badge>
-          </div>
         </div>
 
         {/* Steps */}
