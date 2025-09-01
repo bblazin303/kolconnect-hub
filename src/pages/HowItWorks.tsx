@@ -163,11 +163,11 @@ export default function HowItWorksPage() {
       {/* Interactive How It Works */}
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'project' | 'kol')}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 mb-12">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 glass-card">
-            <TabsTrigger value="project" className="font-medium">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 bg-card border border-border/50 shadow-sm">
+            <TabsTrigger value="project" className="font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               For Projects
             </TabsTrigger>
-            <TabsTrigger value="kol" className="font-medium">
+            <TabsTrigger value="kol" className="font-medium data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
               For KOLs
             </TabsTrigger>
           </TabsList>
