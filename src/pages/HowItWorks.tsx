@@ -161,26 +161,40 @@ export default function HowItWorksPage() {
       </section>
 
       {/* Interactive How It Works */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'project' | 'kol')}>
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 mb-12">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 bg-card border border-border/50 shadow-sm">
-            <TabsTrigger value="project" className="font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              For Projects
-            </TabsTrigger>
-            <TabsTrigger value="kol" className="font-medium data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-              For KOLs
-            </TabsTrigger>
-          </TabsList>
-        </div>
+      <section className="py-12 bg-muted/5">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold mb-4">Choose Your Path</h2>
+            <div className="flex justify-center mb-8">
+              <div className="inline-flex p-1 bg-muted rounded-lg border">
+                <button
+                  onClick={() => setActiveTab('project')}
+                  className={`px-6 py-2 rounded-md font-medium transition-all ${
+                    activeTab === 'project'
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  For Projects
+                </button>
+                <button
+                  onClick={() => setActiveTab('kol')}
+                  className={`px-6 py-2 rounded-md font-medium transition-all ${
+                    activeTab === 'kol'
+                      ? 'bg-secondary text-secondary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  For KOLs
+                </button>
+              </div>
+            </div>
+          </div>
 
-        <TabsContent value="project">
-          <HowItWorksSection userType="project" />
-        </TabsContent>
-        
-        <TabsContent value="kol">
-          <HowItWorksSection userType="kol" />
-        </TabsContent>
-      </Tabs>
+          {activeTab === 'project' && <HowItWorksSection userType="project" />}
+          {activeTab === 'kol' && <HowItWorksSection userType="kol" />}
+        </div>
+      </section>
 
       {/* Benefits Section */}
       <section className="py-20 bg-muted/10">
