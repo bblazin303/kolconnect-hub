@@ -299,7 +299,7 @@ export default function KOLDirectoryRealUsers() {
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
                       <SelectItem value="rating">Highest Rated</SelectItem>
                       <SelectItem value="followers">Most Followers</SelectItem>
                       <SelectItem value="campaigns">Most Campaigns</SelectItem>
