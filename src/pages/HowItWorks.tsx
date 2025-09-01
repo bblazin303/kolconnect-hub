@@ -130,7 +130,7 @@ export default function HowItWorksPage() {
       <Header />
       
       {/* Hero Section */}
-      <section className="pt-20 pb-12 bg-gradient-to-b from-background to-muted/20">
+      <section className="pt-36 pb-12 bg-gradient-to-b from-background to-muted/20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <Badge variant="outline" className="mb-6 text-crypto-blue border-crypto-blue/30 bg-crypto-blue/10">
             Complete Guide

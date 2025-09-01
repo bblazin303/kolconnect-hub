@@ -54,7 +54,7 @@ export function Header({ userType = null, isAuthenticated: propIsAuthenticated =
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full glass-card border-b">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full glass-card border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
