@@ -161,7 +161,7 @@ export function FeaturedKOLs() {
                     <div className="flex items-center space-x-3">
                       <Avatar className="h-12 w-12 ring-2 ring-primary/20">
                         <AvatarImage src={kol.twitter_profile_image_url} alt={kol.display_name} />
-                        <AvatarFallback>{kol.display_name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        <AvatarFallback>{kol.display_name ? kol.display_name.split(' ').map(n => n[0]).join('') : 'KOL'}</AvatarFallback>
                       </Avatar>
                       <div>
                         <div className="flex items-center gap-2">
