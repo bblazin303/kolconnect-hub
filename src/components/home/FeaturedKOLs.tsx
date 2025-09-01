@@ -71,7 +71,6 @@ export function FeaturedKOLs() {
           `)
           .eq('user_type', 'kol')
           .eq('kol_profiles.availability', true)
-          .eq('twitter_verified', true)
           .not('twitter_followers_count', 'is', null)
           .order('twitter_followers_count', { ascending: false })
           .limit(4);
