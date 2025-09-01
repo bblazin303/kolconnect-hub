@@ -95,6 +95,12 @@ export function Header({ userType = null, isAuthenticated: propIsAuthenticated =
             >
               How It Works
             </Link>
+            <Link 
+              to="/whitepaper" 
+              className="text-foreground/80 hover:text-primary transition-colors"
+            >
+              Whitepaper
+            </Link>
           </nav>
 
           {/* Right Section */}
@@ -226,6 +232,13 @@ export function Header({ userType = null, isAuthenticated: propIsAuthenticated =
                 onClick={() => setIsMenuOpen(false)}
               >
                 How It Works
+              </Link>
+              <Link 
+                to="/whitepaper" 
+                className="text-foreground/80 hover:text-primary transition-colors px-2 py-1"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Whitepaper
               </Link>
               
               {!actuallyAuthenticated && (
