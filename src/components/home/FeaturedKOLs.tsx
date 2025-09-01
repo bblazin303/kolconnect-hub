@@ -158,11 +158,25 @@ export function FeaturedKOLs() {
                 <CardContent className="p-6">
                   {/* Header */}
                   <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-12 w-12 ring-2 ring-primary/20">
-                        <AvatarImage src={kol.twitter_profile_image_url} alt={kol.display_name} />
-                        <AvatarFallback>{kol.display_name ? kol.display_name.split(' ').map(n => n[0]).join('') : 'KOL'}</AvatarFallback>
-                      </Avatar>
+                     <div className="flex items-center space-x-3">
+                       <div className="relative">
+                         <img 
+                           src={kol.twitter_profile_image_url}
+                           alt={kol.display_name}
+                           className="h-12 w-12 rounded-full object-cover ring-2 ring-primary/20"
+                           onError={(e) => {
+                             console.log('Image failed to load:', kol.twitter_profile_image_url);
+                             // Replace with fallback div
+                             const fallbackDiv = document.createElement('div');
+                             fallbackDiv.className = 'h-12 w-12 rounded-full bg-secondary flex items-center justify-center ring-2 ring-primary/20';
+                             fallbackDiv.innerHTML = `<span class="text-lg font-bold text-foreground">${kol.display_name ? kol.display_name.split(' ').map(n => n[0]).join('') : 'KOL'}</span>`;
+                             e.currentTarget.parentNode?.replaceChild(fallbackDiv, e.currentTarget);
+                           }}
+                           onLoad={() => {
+                             console.log('Image loaded successfully:', kol.twitter_profile_image_url);
+                           }}
+                         />
+                       </div>
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="font-semibold text-sm">{kol.display_name}</h3>
