@@ -47,104 +47,7 @@ interface Job {
   isFeatured: boolean;
 }
 
-const jobData: Job[] = [
-  {
-    id: "1",
-    title: "DeFi Protocol Launch Campaign",
-    company: "YieldMax Finance",
-    companyLogo: "/company-logos/yieldmax.jpg",
-    budget: "$15,000 - $25,000",
-    budgetMin: 15000,
-    budgetMax: 25000,
-    timeline: "2-3 weeks",
-    location: "Remote",
-    postedDate: "2 hours ago",
-    applicants: 23,
-    description: "We're launching a revolutionary DeFi yield farming protocol and need top-tier KOLs to drive awareness and adoption. This campaign will focus on educational content, protocol tutorials, and community building.",
-    requirements: [
-      "50K+ followers with DeFi audience",
-      "Previous DeFi campaign experience",
-      "Strong engagement rates (>5%)",
-      "Technical content creation ability"
-    ],
-    deliverables: [
-      "5 educational Twitter threads",
-      "2 video tutorials (YouTube/TikTok)",
-      "1 Twitter Space AMA session",
-      "Daily engagement for 2 weeks"
-    ],
-    chains: ["Ethereum", "Polygon"],
-    categories: ["DeFi", "Yield Farming", "Education"],
-    experienceLevel: 'expert',
-    campaignType: 'project-based',
-    isUrgent: true,
-    isFeatured: true
-  },
-  {
-    id: "2",
-    title: "NFT Collection Marketing Push",
-    company: "ArtChain Studios",
-    companyLogo: "/company-logos/artchain.jpg",
-    budget: "$8,000 - $12,000",
-    budgetMin: 8000,
-    budgetMax: 12000,
-    timeline: "1 week",
-    location: "Remote",
-    postedDate: "5 hours ago",
-    applicants: 31,
-    description: "Seeking creative KOLs to promote our upcoming generative art NFT collection. Focus on art communities, collectors, and NFT enthusiasts.",
-    requirements: [
-      "25K+ followers interested in NFTs/Art",
-      "Previous NFT promotion experience",
-      "Creative content creation skills",
-      "Art community connections"
-    ],
-    deliverables: [
-      "3 promotional posts with custom graphics",
-      "1 collection review video",
-      "Stories/Reels showcasing artwork",
-      "Discord community engagement"
-    ],
-    chains: ["Ethereum", "Solana"],
-    categories: ["NFTs", "Art", "Collectibles"],
-    experienceLevel: 'intermediate',
-    campaignType: 'one-time',
-    isUrgent: false,
-    isFeatured: false
-  },
-  {
-    id: "3",
-    title: "Memecoin Community Building",
-    company: "DogeRocket",
-    companyLogo: "/company-logos/dogerocket.jpg",
-    budget: "$5,000 - $8,000",
-    budgetMin: 5000,
-    budgetMax: 8000,
-    timeline: "Ongoing",
-    location: "Remote",
-    postedDate: "1 day ago",
-    applicants: 67,
-    description: "Looking for fun, engaging KOLs to help build our memecoin community. Must have experience with viral content and meme culture.",
-    requirements: [
-      "Strong meme game and humor",
-      "Active in crypto Twitter",
-      "Experience with viral content",
-      "Community building skills"
-    ],
-    deliverables: [
-      "Daily meme posts",
-      "Community engagement",
-      "Viral content creation",
-      "Telegram/Discord participation"
-    ],
-    chains: ["Solana", "Base"],
-    categories: ["Memecoins", "Community", "Viral Content"],
-    experienceLevel: 'entry',
-    campaignType: 'ongoing',
-    isUrgent: false,
-    isFeatured: false
-  }
-];
+const jobData: Job[] = [];
 
 export default function JobBoard() {
   const navigate = useNavigate();
@@ -324,7 +227,7 @@ export default function JobBoard() {
               Job <span className="text-gradient-gold">Board</span>
             </h1>
             <p className="text-lg text-muted-foreground">
-              Discover {jobData.length}+ active campaigns from verified crypto projects
+              Discover active campaigns from verified crypto projects
             </p>
           </div>
           
