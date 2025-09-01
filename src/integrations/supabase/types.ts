@@ -345,6 +345,7 @@ export type Database = {
           bio: string | null
           created_at: string | null
           id: string
+          is_vip_kol: boolean
           twitter_account_created_at: string | null
           twitter_description: string | null
           twitter_followers_count: number | null
@@ -368,6 +369,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           id: string
+          is_vip_kol?: boolean
           twitter_account_created_at?: string | null
           twitter_description?: string | null
           twitter_followers_count?: number | null
@@ -391,6 +393,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           id?: string
+          is_vip_kol?: boolean
           twitter_account_created_at?: string | null
           twitter_description?: string | null
           twitter_followers_count?: number | null
@@ -410,6 +413,41 @@ export type Database = {
           website_url?: string | null
         }
         Relationships: []
+      }
+      vip_kols: {
+        Row: {
+          created_at: string
+          follower_count_at_signup: number
+          id: string
+          signup_timestamp: string
+          user_id: string
+          vip_position: number
+        }
+        Insert: {
+          created_at?: string
+          follower_count_at_signup: number
+          id?: string
+          signup_timestamp?: string
+          user_id: string
+          vip_position: number
+        }
+        Update: {
+          created_at?: string
+          follower_count_at_signup?: number
+          id?: string
+          signup_timestamp?: string
+          user_id?: string
+          vip_position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vip_kols_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
