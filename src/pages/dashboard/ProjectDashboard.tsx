@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
+import { VerificationStatus } from '@/components/dashboard/VerificationStatus'
 import { DollarSign, Users, Briefcase, TrendingUp, Plus, Eye } from 'lucide-react'
 
 interface ProjectStats {
@@ -100,6 +101,9 @@ export default function ProjectDashboard() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        {/* Verification Status */}
+        <VerificationStatus />
+        
         {/* Welcome Section */}
         <div className="flex items-center justify-between">
           <div>

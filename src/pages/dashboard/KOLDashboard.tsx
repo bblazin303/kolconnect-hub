@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
 import { TwitterProfileCard } from '@/components/dashboard/TwitterProfileCard'
+import { VerificationStatus } from '@/components/dashboard/VerificationStatus'
 import { DollarSign, Star, Briefcase, TrendingUp, Calendar, MessageSquare } from 'lucide-react'
 
 interface KOLStats {
@@ -189,8 +190,9 @@ export default function KOLDashboard() {
           </Card>
         </div>
 
-        {/* Sidebar - Twitter Profile */}
-        <div className="lg:col-span-1">
+        {/* Sidebar */}
+        <div className="lg:col-span-1 space-y-6">
+          <VerificationStatus />
           <TwitterProfileCard />
         </div>
       </div>

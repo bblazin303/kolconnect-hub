@@ -12,6 +12,7 @@ import { Header } from '@/components/layout/Header';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { VerificationAlert } from '@/components/ui/verification-alert';
 
 export default function PostJob() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export default function PostJob() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [projectProfile, setProjectProfile] = useState<any>(null);
   const [profileLoading, setProfileLoading] = useState(true);
+  const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -39,10 +41,10 @@ export default function PostJob() {
 
     const checkUserAccess = async () => {
     try {
-      // First check if user is a project type
+      // First check if user is a project type and verified
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('user_type')
+        .select('user_type, twitter_verified')
         .eq('id', user!.id)
         .single();
 
@@ -66,6 +68,9 @@ export default function PostJob() {
         navigate('/');
         return;
       }
+
+      // Set verification status
+      setIsVerified(userData?.twitter_verified || false);
 
       // Fetch project profile
       const { data: profile, error: profileError } = await supabase
@@ -205,6 +210,16 @@ export default function PostJob() {
             </CardHeader>
 
             <CardContent>
+              {!isVerified && (
+                <div className="mb-6">
+                  <VerificationAlert 
+                    userType="project" 
+                    action="post jobs" 
+                    showRefreshButton={true}
+                  />
+                </div>
+              )}
+              
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
@@ -325,8 +340,8 @@ export default function PostJob() {
                   </Button>
                   <Button 
                     type="submit" 
-                    disabled={isSubmitting}
-                    className="flex-1 bg-primary hover:bg-primary/90"
+                    disabled={isSubmitting || !isVerified}
+                    className="flex-1 bg-primary hover:bg-primary/90 disabled:opacity-50"
                   >
                     {isSubmitting ? "Posting..." : "Post Job"}
                   </Button>
