@@ -273,7 +273,7 @@ export default function KOLDirectoryRealUsers() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Search and Controls */}
           <div className="lg:w-80 space-y-6">
-            <div className="social-card p-6">
+            <div className="bg-card/50 backdrop-blur border border-border/50 rounded-xl p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Filter className="h-4 w-4" />
                 <h3 className="font-semibold">Search & Filter</h3>
