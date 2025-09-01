@@ -8,11 +8,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, Briefcase, Loader2, AlertCircle } from 'lucide-react';
+import { VerificationAlert } from '@/components/ui/verification-alert';
 import { Header } from '@/components/layout/Header';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { VerificationAlert } from '@/components/ui/verification-alert';
 
 export default function PostJob() {
   const navigate = useNavigate();
@@ -66,6 +66,16 @@ export default function PostJob() {
           variant: "destructive"
         });
         navigate('/');
+        return;
+      }
+
+      if (!userData?.twitter_verified) {
+        toast({
+          title: "Twitter verification required",
+          description: "You must have a verified Twitter account to post jobs. Please refresh your Twitter metrics if you recently got verified.",
+          variant: "destructive"
+        });
+        navigate('/dashboard/profile');
         return;
       }
 
