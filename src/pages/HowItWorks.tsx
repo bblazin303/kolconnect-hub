@@ -89,10 +89,10 @@ const benefits = {
 };
 
 const stats = [
-  { number: "500+", label: "Verified KOLs", icon: <Users className="h-5 w-5" /> },
-  { number: "1M+", label: "Total Reach", icon: <Globe className="h-5 w-5" /> },
-  { number: "98%", label: "Success Rate", icon: <CheckCircle className="h-5 w-5" /> },
-  { number: "$2M+", label: "Paid Out", icon: <DollarSign className="h-5 w-5" /> }
+  { number: "Quality", label: "Verified KOLs", icon: <Users className="h-5 w-5" /> },
+  { number: "Global", label: "Community Reach", icon: <Globe className="h-5 w-5" /> },
+  { number: "Trusted", label: "Platform", icon: <CheckCircle className="h-5 w-5" /> },
+  { number: "Secure", label: "Payments", icon: <DollarSign className="h-5 w-5" /> }
 ];
 
 const faqs = [

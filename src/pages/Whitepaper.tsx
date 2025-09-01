@@ -134,23 +134,23 @@ const Whitepaper = () => {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-bold text-lg mb-3">Platform Statistics</h4>
+                  <h4 className="font-bold text-lg mb-3">Platform Highlights</h4>
                   <ul className="space-y-2">
                     <li className="flex items-start gap-2">
                       <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                      <span>500+ verified crypto KOLs</span>
+                      <span>Growing community of verified crypto KOLs</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                      <span>150+ successful campaigns completed</span>
+                      <span>Successfully completed campaigns across sectors</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                      <span>98% client satisfaction rate</span>
+                      <span>High client satisfaction and retention</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                      <span>$2M+ in campaign value facilitated</span>
+                      <span>Significant campaign value facilitated</span>
                     </li>
                   </ul>
                 </div>
@@ -230,10 +230,10 @@ const Whitepaper = () => {
                 <div>
                   <h4 className="font-semibold mb-2">Results</h4>
                   <ul className="text-sm space-y-1">
-                    <li>• 500+ verified KOLs onboarded</li>
-                    <li>• 150+ successful campaigns</li>
-                    <li>• $2M+ in facilitated transactions</li>
-                    <li>• 98% satisfaction rate</li>
+                    <li>• Growing base of verified KOLs onboarded</li>
+                    <li>• Diverse successful campaigns delivered</li>
+                    <li>• Substantial transaction volume facilitated</li>
+                    <li>• Strong user satisfaction and retention</li>
                   </ul>
                 </div>
               </div>

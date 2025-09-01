@@ -33,7 +33,7 @@ export function HeroSection() {
           {/* Badge */}
           <Badge variant="outline" className="mb-6 text-primary border-primary/30 bg-primary/10 px-4 py-1">
             <CheckCircle className="w-3 h-3 mr-2" />
-            Trusted by 10,000+ Projects & KOLs
+            Trusted Platform for Projects & KOLs
           </Badge>
 
           {/* Main Heading */}
@@ -72,24 +72,24 @@ export function HeroSection() {
             </Link>
           </div>
 
-          {/* Stats */}
+          {/* Key Benefits */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-2xl mx-auto">
             <div className="glass-card p-6 text-center card-hover">
               <Users className="h-8 w-8 text-primary mx-auto mb-3" />
-              <div className="text-2xl font-bold text-gradient-gold">5,000+</div>
-              <div className="text-sm text-muted-foreground">Verified KOLs</div>
+              <div className="text-xl font-bold text-gradient-gold">Verified</div>
+              <div className="text-sm text-muted-foreground">Quality KOLs Only</div>
             </div>
             
             <div className="glass-card p-6 text-center card-hover">
               <TrendingUp className="h-8 w-8 text-secondary mx-auto mb-3" />
-              <div className="text-2xl font-bold text-gradient-emerald">$50M+</div>
-              <div className="text-sm text-muted-foreground">Campaigns Completed</div>
+              <div className="text-xl font-bold text-gradient-emerald">Growing</div>
+              <div className="text-sm text-muted-foreground">Active Community</div>
             </div>
             
             <div className="glass-card p-6 text-center card-hover">
               <Shield className="h-8 w-8 text-crypto-blue mx-auto mb-3" />
-              <div className="text-2xl font-bold text-blue-400">99.2%</div>
-              <div className="text-sm text-muted-foreground">Success Rate</div>
+              <div className="text-xl font-bold text-blue-400">Secure</div>
+              <div className="text-sm text-muted-foreground">Protected Payments</div>
             </div>
           </div>
 
@@ -97,7 +97,7 @@ export function HeroSection() {
           <div className="mt-12 flex flex-wrap justify-center items-center gap-6 text-muted-foreground">
             <div className="flex items-center gap-2">
               <Star className="h-4 w-4 text-primary fill-primary" />
-              <span className="text-sm">4.9/5 Average Rating</span>
+              <span className="text-sm">Satisfied Users</span>
             </div>
             <div className="flex items-center gap-2">
               <Shield className="h-4 w-4 text-secondary" />
